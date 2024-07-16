@@ -1,7 +1,9 @@
-
 # Types of files to parse
 parsable_exts = {
-    'mupdf': ['pdf','xps','fb2','epub'],
+    'mupdf': [
+        'pdf','xps','fb2','epub',
+        '.mobi', '.xlsx', '.pptx'
+    ],
     'ffmpeg_audio': [
         # Audio
         ".au",".it",".mak",".midi",
