@@ -1,4 +1,4 @@
-from .file_indexer import FileIndexer
+from .file_indexer import LinuxFileIndexer
 
 
-__all__ = [FileIndexer,]
+__all__ = [LinuxFileIndexer,]

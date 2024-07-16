@@ -1,1 +1,1 @@
-from .database.file_indexer import FileIndexer
+from .database.file_indexer import LinuxFileIndexer

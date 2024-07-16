@@ -8,8 +8,8 @@ from .parse import parse_file_contents
 from .util import create_init_config
 
 
-
-class FileIndexer:
+# Required Only for Linux (Use Windows Search Index for Windows)
+class LinuxFileIndexer:
     def __init__(self, db_name="better_search_index.db", config_file="./config.json", log_file="indexer.log"):
         # Setup logging
         logging.basicConfig(filename=log_file,format="%(asctime)s %(message)s",filemode='a')
@@ -26,7 +26,7 @@ class FileIndexer:
         self.config_file = config_file
         
         self.load_config()
-        self.create_tables()
+        self.__create_tables()
         
     
     def save_config(self): 
@@ -50,7 +50,7 @@ class FileIndexer:
         return result
             
     
-    def create_tables(self):
+    def __create_tables(self):
         with self.conn:
             # Create tables
             self.conn.executescript(f"""
@@ -211,5 +211,7 @@ class FileIndexer:
             self.logger.removeHandler(handler)
             handler.close()
         
+        
+# 
         
 
