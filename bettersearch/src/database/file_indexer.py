@@ -1,16 +1,28 @@
-import sqlite3
+
 import os
-import logging
-from collections import defaultdict
+from operator import itemgetter
 import json
+import logging
+import sqlite3
+import time
+from collections import defaultdict
+from typing import Callable, List, Dict
+import pathlib
+import threading
+
+import adodbapi as OleDb
+import chromadb
+from langchain.text_splitter import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+
 from . import constants
 from .parse import parse_file_contents
-from .util import create_init_config
+from .util import create_init_config, is_sql_query, format_sqlrows_to_text, format_sqlrows_to_dict
+from .embedding_model import EmbeddingModelFunction
 
 
-# Required Only for Linux (Use Windows Search Index for Windows)
+# WIP Required Only for Linux (Use Windows Search Index DB for Windows)
 class LinuxFileIndexer:
-    def __init__(self, db_name="better_search_index.db", config_file="./config.json", log_file="indexer.log"):
+    def __init__(self, db_name="better_search_index.db", vector_db_path="better_search_content.db",config_file="./config.json", log_file="indexer.log"):
         # Setup logging
         logging.basicConfig(filename=log_file,format="%(asctime)s %(message)s",filemode='a')
         self.logger = logging.getLogger()
@@ -103,7 +115,7 @@ class LinuxFileIndexer:
             elif isinstance(content, defaultdict):
                 cursor.execute(
                     """
-                    INSERT OR REPLACE INTO content_index (
+                    INSERT OR REPLACE INTO image_metadata (
                         file_id, dimensions, camera_model, date_taken, gps_coordinates 
                     ) VALUES (?, ?, ?, ?, ?)
                     """, (file_id, content.get('dimensions'), content.get('camera_model'), content.get('date_taken'), content.get('gps_coordinates'))
@@ -210,8 +222,186 @@ class LinuxFileIndexer:
         for handler in self.logger.handlers[:]:
             self.logger.removeHandler(handler)
             handler.close()
-        
-        
-# 
-        
 
+
+
+# Vector Database Class
+class VectorDB():
+    def __init__(self, vector_db_path:str="better_search_content_db", embd_model_name="Alibaba-NLP/gte-base-en-v1.5", chunk_size=512, chunk_overlap=128, top_k=1):
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.db = chromadb.PersistentClient(
+            path=vector_db_path, 
+            settings=chromadb.config.Settings(),   
+        )
+        self.db_collection = self.db.get_or_create_collection(
+            name="file-content", 
+            embedding_function=EmbeddingModelFunction(model_name=embd_model_name)
+        )
+        self._top_k = top_k
+    
+    @property
+    def top_k(self):
+        return self._top_k    
+    
+    @top_k.setter
+    def top_k(self, value):
+        self._top_k = value
+    
+    def _create_docs_for_db(self, file_path):
+        content = parse_file_contents(file_path)
+        file_dir, (filename, ext) = os.path.basename(os.path.dirname(file_path)), os.path.splitext(os.path.basename(file_path))
+        if isinstance(content, str):
+            if pathlib.Path(file_path).suffix in constants.parsable_exts.get("pymupdf"):
+                splitter = MarkdownHeaderTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
+            elif pathlib.Path(file_path).suffix in constants.parsable_exts.get("text"):
+                splitter = RecursiveCharacterTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
+            docs = [doc.page_content for doc in splitter.create_documents([content])]
+            metadatas = [f'''"source_file": "{file_path}", "file_ext": "{ext}"''' for _ in range(len(docs))]
+            ids = [f"{os.path.join(file_dir,filename)}_{i+1}" for i in range(len(docs))]
+            return {"documents": docs, "metadatas": metadatas, "ids": ids}
+        else:
+            return None
+    
+    def add_to_collection(self, file_path):
+        data = self._create_docs_for_db(file_path=file_path)
+        self.db_collection.add(
+            documents=data.get("documents"),
+            metadatas=data.get("metadatas"),
+            ids=data.get("ids"),
+        )
+    
+    def update_to_collection(self, file_path):
+        data = self._create_docs_for_db(file_path=file_path)
+        self.db_collection.update(
+            documents=data.get("documents"),
+            metadatas=data.get("metadatas"),
+            ids=data.get("ids"),
+        )
+    
+    def delete_from_collection(self, file_path):
+        self.db_collection.delete(
+            where={"source_file": file_path}
+        )
+    
+    def update_collection(self, change_list):
+        for change in change_list:
+            change_type, file_path = itemgetter("ChangeType","System.ItemPath")(change)
+            if change_type == 'Deleted':
+                self.delete_from_collection(file_path=file_path)
+            elif change_type == 'Added':
+                self.add_to_collection(file_path=file_path)
+            elif change_type == 'Modified':
+                self.update_to_collection(file_path=file_path)
+            else:
+                # Change type is not defined
+                pass
+        
+    
+    
+    
+
+
+# Windows Search Indexer
+class WindowsFileIndexer():
+    def __init__(self, vector_db_path:str="better_search_content_db",config_file="./config.json", log_file="indexer.log", check_interval=60):
+        self.conn = OleDb.connect(constants.WIN_CONN_STRING)
+        self.vector_db = VectorDB(vector_db_path=vector_db_path)
+        self.check_interval = check_interval
+        self.last_check = None
+        self.callbacks = [self.vector_db.update_collection]
+        self.current_state = {}
+        self.stop_event = threading.Event()
+        self.monitor_thread = threading.Thread(target=self._run_monitor)
+        
+    def register_callback(self, callback: Callable[[List[Dict]], None]):
+        """
+        Register callback function to be called when changes are detected
+
+        Args:
+            callback (Callable[[List[Dict]], None]): _description_
+            List of changed rows as argument
+        """
+        self.callbacks.append(callback)
+    
+    def get_current_state(self):
+        """
+        Get current state of table
+
+        Returns:
+            Dict: Item Path and Item Details
+        """
+        query = (
+'''SELECT "System.ItemPathDisplay", "System.DateModified" FROM "SystemIndex" WHERE WorkId IS NOT NULL AND scope='file:' AND Contains(System.ItemType, '"xlsx" OR "epub" OR "xps" OR "mobi" OR "pdf" OR "pptx" OR "fb2"') ORDER BY System.DateModified DESC'''#.format('" OR "'.join(constants.parsable_exts.get('mupdf')))
+        )
+        with self.conn:
+            cursor = self.conn.cursor()
+            cursor.execute(query)
+            result = cursor.fetchall()
+            result = format_sqlrows_to_dict(result, cursor.get_description())
+        return result
+    
+    def detect_changes(self):
+        """
+        Detect changes in state
+
+        Returns:
+            Dict: Item Path and Item Details
+        """
+        new_state = self.get_current_state()
+        changes = []
+        
+        # Detect deletions
+        for path in self.current_state.keys():
+            if path not in new_state:
+                changes.append({'ChangeType': 'Deleted', **self.current_state[path]})
+        
+        # Detect additions and modifications
+        for path, item in new_state.items():
+            if path not in self.current_state:
+                changes.append({'ChangeType': 'Added', **item})
+            elif self.current_state[path] != item:
+                changes.append({'ChangeType': 'Modified', **item})
+        
+        self.current_state = new_state
+        return changes
+    
+    def _run_monitor(self):
+        """
+        Monitor table for changes and call registered callbacks when changes are detected
+        """
+        self.current_state = self.get_current_state()
+        while not self.stop_event.is_set():
+            changes = self.detect_changes()
+            if changes:
+                for callback in self.callbacks:
+                    callback(changes)
+            time.sleep(self.check_interval)
+            
+    def start_monitoring(self):
+        """
+        Start monitoring Search Index for changes in separate thread
+        """
+        self.monitor_thread.start()
+    
+    def stop_monitoring(self):
+        """
+        Stop monitoring Search Index for changes
+        """
+        self.stop_event.set()
+        self.monitor_thread.join()
+
+    @property
+    def table_info(self):
+        return constants.WIN_SYSTEMINDEX_TABLE_INFO
+    
+    def query(self, query):
+        if is_sql_query(query):
+            with self.conn:
+                cursor = self.conn.cursor()
+                cursor.execute(query)
+                result = cursor.fetchall()
+                result = format_sqlrows_to_text(result, cursor.get_description())
+            return result
+        else:
+            pass

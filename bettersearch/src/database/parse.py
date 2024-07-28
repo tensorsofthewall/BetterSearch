@@ -18,7 +18,7 @@ from .util import convert_gps_info_to_lat_lon_alt, get_all_exts
 logger = logging.getLogger(__name__)
 
 
-def parse_file_contents(file_path):
+def parse_file_contents(file_path: str):
     ext = pathlib.Path(file_path).suffix
     if pathlib.Path(file_path).suffix not in get_all_exts(parsable_exts):
         return None

@@ -1,4 +1,4 @@
-import os
+import os, re
 import platform
 from collections import defaultdict
 from .constants import parsable_exts
@@ -53,3 +53,64 @@ def create_init_config():
     if platform.system() == "Windows":
         config['index_folder_exceptions'] = os.path.join(os.path.expanduser("~"), "AppData")
     return config
+
+
+def is_sql_query(query):
+    """
+    Check if given query is SQL or NL query
+    """
+    
+    sql_keywords = [
+        'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'FROM', 'WHERE', 'JOIN', 'LEFT', 'RIGHT', 'INNER',
+        'OUTER', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET', 'CREATE', 'ALTER', 'DROP', 'TABLE',
+        'DATABASE', 'VIEW', 'INDEX', 'VALUES', 'SET', 'AND', 'OR', 'NOT', 'BETWEEN', 'LIKE', 'IN', 'AS', 'DISTINCT'
+    ]
+    
+    query_upper = query.upper()
+    
+    for keyword in sql_keywords:
+        if keyword in query_upper:
+            return True
+    
+    # Regex Checking of SQL-like syntax
+    
+    sql_patterns = [
+        r'\bSELECT\b.*\bFROM\b',
+        r'\bINSERT\b.*\bINTO\b',
+        r'\bUPDATE\b.*\bSET\b',
+        r'\bDELETE\b.*\bFROM\b'
+    ]
+    
+    for pattern in sql_patterns:
+        if re.search(pattern, query_upper):
+            return True
+    
+    return False
+
+def format_sqlrows_to_text(rows, description):
+    """
+    Convert SQLrows to text input for LLM
+    """
+    if not rows:
+        return ""
+    
+    column_names = [desc[0] for desc in description]
+    formatted_text = ""
+    for row in rows:
+        row_text = ", ".join(f"{column_names[i]}: {row[i]}" for i in range(len(row)))
+        formatted_text += f"{row_text}\n"
+    
+    return formatted_text.strip()
+
+def format_sqlrows_to_dict(rows, description):
+    if not rows:
+        return {}
+    
+    column_names = [desc[0] for desc in description]
+    formatted_dict = {}
+    for row in rows:
+        item = {}
+        item.update({column_names[i]: row[i] for i in range(len(row))})
+        formatted_dict[item["System.ItemPathDisplay"]] = item
+    
+    return formatted_dict

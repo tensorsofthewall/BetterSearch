@@ -2,7 +2,7 @@
 parsable_exts = {
     'mupdf': [
         'pdf','xps','fb2','epub',
-        '.mobi', '.xlsx', '.pptx'
+        'mobi', 'xlsx', 'pptx'
     ],
     'ffmpeg_audio': [
         # Audio
@@ -163,3 +163,65 @@ CREATE TABLE IF NOT EXISTS index_maintenance (
             FOREIGN KEY (file_id) REFERENCES file_metadata(file_id) 
             ON DELETE CASCADE
         )'''
+        
+        
+# Win Search Index constants
+WIN_CONN_STRING = 'Provider=Search.CollatorDSO;' \
+              'Extended Properties=\"Application=Windows\"'
+              
+WIN_SYSTEMINDEX_COLS = {
+    "author": "System.ItemAuthors",
+    "date": "System.ItemDate",
+    "date_modified": "System.DateModified",
+    "date_accessed": "System.DateAccessed",
+    # The extension of a file, without the dot at
+    # the beginning
+    "fileext": "System.ItemType",
+    "path": "System.ItemPathDisplay",
+    # Windows Search intern rank of the file
+    "rank": "System.Search.Rank",
+    # Mimetype of a file
+    "mimetype": "MimeType",
+    "url": "System.ItemUrl",
+    # Filename: Same like os.path.basename(path)
+    "name": "System.ItemName",
+    # Size of a file in Bytes
+    "size": "System.Size",
+    # unknowen function
+    "kind": "System.Kind",
+    # ...more...
+}
+
+# Schema description
+WIN_SYSTEMINDEX_SCHEMA_DESCRIPTION = {
+    "author": "List of authors associated with a file.",
+    "date": "Primary date and time of interest for an item. Usually signifies date and time of creation.",
+    "date_modified": "The date and time the file was last modified.",
+    "date_accessed": "The date and time the file was last opened.",
+    "fileext": "Signifies type of file by extension, including leading period.",
+    "path": "Full path of a file, which is unique.",
+    "rank": "Relevance rank of a file. Used only for retrieval, not search.",
+    "mimetype": "MIME type of the file.",
+    "url": "Specifies URL of the file.", 
+    "name": "Name of the file.",
+    "size": "Size of the file in bytes.",
+    "kind": "Categorizes the item into a broad type (e.g., document, music, picture, video).",
+}
+
+# SystemIndex Table Info for LLM
+WIN_SYSTEMINDEX_TABLE_INFO = '''
+CREATE TABLE SystemIndex (
+    author TEXT,
+    date DATETIME,
+    date_modified DATETIME,
+    date_accessed DATETIME,
+    fileext VARCHAR(255),
+    path TEXT UNIQUE,
+    rank INT,
+    mimetype VARCHAR(255),
+    url VARCHAR(255),
+    name VARCHAR(255),
+    size BIGINT,
+    kind VARCHAR(255)
+)
+'''
