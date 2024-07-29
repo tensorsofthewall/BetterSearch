@@ -19,20 +19,21 @@ logger = logging.getLogger(__name__)
 
 
 def parse_file_contents(file_path: str):
-    ext = pathlib.Path(file_path).suffix
-    if pathlib.Path(file_path).suffix not in get_all_exts(parsable_exts):
-        return None
-    
-    else:
-        if ext in parsable_exts.get('mupdf'):
-            return _parse_pdf(file_path)
-        elif ext in chain(parsable_exts.get('ffmpeg_audio'), parsable_exts.get('ffmpeg_image'), parsable_exts.get('ffmpeg_video')):
-            return _parse_ffmpeg(file_path, ext)
-        elif ext in parsable_exts.get('text'):
-            return _parse_txt(file_path)
+    try:
+        ext = pathlib.Path(file_path).suffix
+        if pathlib.Path(file_path).suffix not in get_all_exts(parsable_exts):
+            return None
         else:
-            logger.error(f"The given file is not supported for parsing. Try again: {file_path}")
-        
+            if ext in parsable_exts.get('mupdf'):
+                return _parse_pdf(file_path)
+            elif ext in chain(parsable_exts.get('ffmpeg_audio'), parsable_exts.get('ffmpeg_image'), parsable_exts.get('ffmpeg_video')):
+                return _parse_ffmpeg(file_path, ext)
+            elif ext in parsable_exts.get('text'):
+                return _parse_txt(file_path)
+            else:
+                logger.error(f"The given file is not supported for parsing. Try again: {file_path}")
+    except:
+        pass
 
 def _parse_txt(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -80,5 +81,4 @@ def _parse_ffmpeg(file_path, ext):
     return parsed
 
 def _parse_pdf(file_path):
-    content = pymupdf4llm.to_markdown(file_path, margins=0)
-    return content
+    return pymupdf4llm.to_markdown(file_path, margins=0)

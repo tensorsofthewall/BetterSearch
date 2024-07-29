@@ -12,12 +12,13 @@ import threading
 
 import adodbapi as OleDb
 import chromadb
-from langchain.text_splitter import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+from langchain.text_splitter import MarkdownTextSplitter, RecursiveCharacterTextSplitter
 
 from . import constants
 from .parse import parse_file_contents
 from .util import create_init_config, is_sql_query, format_sqlrows_to_text, format_sqlrows_to_dict
 from .embedding_model import EmbeddingModelFunction
+from tqdm import tqdm
 
 
 # WIP Required Only for Linux (Use Windows Search Index DB for Windows)
@@ -227,18 +228,19 @@ class LinuxFileIndexer:
 
 # Vector Database Class
 class VectorDB():
-    def __init__(self, vector_db_path:str="better_search_content_db", embd_model_name="Alibaba-NLP/gte-base-en-v1.5", chunk_size=512, chunk_overlap=128, top_k=1):
+    def __init__(self, vector_db_path:str="better_search_content_db", embd_model_name="Alibaba-NLP/gte-base-en-v1.5", chunk_size=512, chunk_overlap=128, top_k=1, batch_size=500):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.db = chromadb.PersistentClient(
             path=vector_db_path, 
             settings=chromadb.config.Settings(),   
         )
-        self.db_collection = self.db.get_or_create_collection(
+        self.collection = self.db.get_or_create_collection(
             name="file-content", 
             embedding_function=EmbeddingModelFunction(model_name=embd_model_name)
         )
         self._top_k = top_k
+        self.batch_size = batch_size
     
     @property
     def top_k(self):
@@ -250,49 +252,60 @@ class VectorDB():
     
     def _create_docs_for_db(self, file_path):
         content = parse_file_contents(file_path)
-        file_dir, (filename, ext) = os.path.basename(os.path.dirname(file_path)), os.path.splitext(os.path.basename(file_path))
+        _, (_, ext) = os.path.basename(os.path.dirname(file_path)), os.path.splitext(os.path.basename(file_path))
         if isinstance(content, str):
-            if pathlib.Path(file_path).suffix in constants.parsable_exts.get("pymupdf"):
-                splitter = MarkdownHeaderTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
+            if pathlib.Path(file_path).suffix in constants.parsable_exts.get("mupdf"):
+                splitter = MarkdownTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
+            
             elif pathlib.Path(file_path).suffix in constants.parsable_exts.get("text"):
                 splitter = RecursiveCharacterTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
+            
             docs = [doc.page_content for doc in splitter.create_documents([content])]
-            metadatas = [f'''"source_file": "{file_path}", "file_ext": "{ext}"''' for _ in range(len(docs))]
-            ids = [f"{os.path.join(file_dir,filename)}_{i+1}" for i in range(len(docs))]
-            return {"documents": docs, "metadatas": metadatas, "ids": ids}
+            metadatas = [{"path": f"{file_path}", "fileext": f"{ext}"} for _ in range(len(docs))]
+            ids = [f"{file_path}_{i+1}" for i in range(len(docs))]
+            
+            return {"documents": docs, "metadatas": metadatas, "ids": ids}, len(docs)
         else:
             return None
     
-    def add_to_collection(self, file_path):
-        data = self._create_docs_for_db(file_path=file_path)
-        self.db_collection.add(
-            documents=data.get("documents"),
-            metadatas=data.get("metadatas"),
-            ids=data.get("ids"),
-        )
+    def add_to_collection(self, file_path=None,date_modified=None):
+        try:
+            data, num_docs = self._create_docs_for_db(file_path=file_path)
+            for i in range(0, num_docs, self.batch_size):
+                self.collection.add(
+                    documents=data.get("documents")[i:i+self.batch_size],
+                    metadatas=data.get("metadatas")[i:i+self.batch_size],
+                    ids=data.get("ids")[i:i+self.batch_size],
+                )
+        except:
+            pass
     
-    def update_to_collection(self, file_path):
-        data = self._create_docs_for_db(file_path=file_path)
-        self.db_collection.update(
-            documents=data.get("documents"),
-            metadatas=data.get("metadatas"),
-            ids=data.get("ids"),
-        )
+    def update_to_collection(self, file_path=None, date_modified=None):
+        try:
+            data, num_docs = self._create_docs_for_db(file_path=file_path)
+            for i in range(0, num_docs, self.batch_size):
+                self.collection.update(
+                    documents=data.get("documents")[i:i+self.batch_size],
+                    metadatas=data.get("metadatas")[i:i+self.batch_size],
+                    ids=data.get("ids")[i:i+self.batch_size],
+                )
+        except:
+            pass
     
-    def delete_from_collection(self, file_path):
-        self.db_collection.delete(
-            where={"source_file": file_path}
+    def delete_from_collection(self, file_path=None):
+        self.collection.delete(
+            where={"path": file_path}
         )
     
     def update_collection(self, change_list):
         for change in change_list:
-            change_type, file_path = itemgetter("ChangeType","System.ItemPath")(change)
+            change_type, file_path, date_modified = itemgetter("ChangeType","path","date_modified")(change)
             if change_type == 'Deleted':
                 self.delete_from_collection(file_path=file_path)
             elif change_type == 'Added':
-                self.add_to_collection(file_path=file_path)
+                self.add_to_collection(file_path=file_path, date_modified=date_modified)
             elif change_type == 'Modified':
-                self.update_to_collection(file_path=file_path)
+                self.update_to_collection(file_path=file_path, date_modified=date_modified)
             else:
                 # Change type is not defined
                 pass
@@ -304,15 +317,19 @@ class VectorDB():
 
 # Windows Search Indexer
 class WindowsFileIndexer():
-    def __init__(self, vector_db_path:str="better_search_content_db",config_file="./config.json", log_file="indexer.log", check_interval=60):
+    def __init__(self, vector_db_path:str="better_search_content_db",config_file="./config.json", log_file="indexer.log", check_interval=30):
         self.conn = OleDb.connect(constants.WIN_CONN_STRING)
         self.vector_db = VectorDB(vector_db_path=vector_db_path)
         self.check_interval = check_interval
         self.last_check = None
+        
         self.callbacks = [self.vector_db.update_collection]
         self.current_state = {}
-        self.stop_event = threading.Event()
-        self.monitor_thread = threading.Thread(target=self._run_monitor)
+        
+        self.db_ready_event = threading.Event()
+        
+        self.start_db_thread = threading.Thread(target=self.start_db)
+        self.start_db_thread.start()
         
     def register_callback(self, callback: Callable[[List[Dict]], None]):
         """
@@ -323,16 +340,46 @@ class WindowsFileIndexer():
             List of changed rows as argument
         """
         self.callbacks.append(callback)
+        
+    def start_db(self):
+        """
+        Update vector db during start of application
+        """
+        vector_files = {k['path']: itemgetter("path", "date_modified")(defaultdict(str, k)) for k in self.vector_db.collection.get(include=['metadatas']).get('metadatas')}
+        
+        self.current_state = self.get_current_state(order_type="size")
+        
+        changes = []
+        
+        for path in self.current_state.keys():
+            if path not in self.current_state:
+                changes.append({'ChangeType': 'Deleted', **self.current_state[path]})
+        
+        # Detect additions and modifications
+        for path, item in self.current_state.items():
+            if path not in vector_files:
+                changes.append({'ChangeType': 'Added', **item})
+            elif self.current_state[path] != item:
+                changes.append({'ChangeType': 'Modified', **item})
+        
+        if changes:
+            for callback in self.callbacks:
+                callback(changes)
+        
+        self.db_ready_event.set()
+        self.start_monitoring()
+        
+        
     
-    def get_current_state(self):
+    def get_current_state(self, columns=["path","date_modified"],order_type="date_modified"):
         """
         Get current state of table
 
         Returns:
-            Dict: Item Path and Item Details
+            dict: Item Path and Item Details
         """
         query = (
-'''SELECT "System.ItemPathDisplay", "System.DateModified" FROM "SystemIndex" WHERE WorkId IS NOT NULL AND scope='file:' AND Contains(System.ItemType, '"xlsx" OR "epub" OR "xps" OR "mobi" OR "pdf" OR "pptx" OR "fb2"') ORDER BY System.DateModified DESC'''#.format('" OR "'.join(constants.parsable_exts.get('mupdf')))
+'''SELECT {}, {} FROM "SystemIndex" WHERE WorkId IS NOT NULL AND scope='file:' AND Contains(System.ItemType, '{}') ORDER BY {} DESC'''.format(*itemgetter(*columns)(constants.WIN_COLS_TO_SYSINDEX),'" OR "'.join(constants.parsable_exts.get('mupdf')), constants.WIN_COLS_TO_SYSINDEX.get(order_type))
         )
         with self.conn:
             cursor = self.conn.cursor()
@@ -370,18 +417,22 @@ class WindowsFileIndexer():
         """
         Monitor table for changes and call registered callbacks when changes are detected
         """
+        self.db_ready_event.wait()
         self.current_state = self.get_current_state()
         while not self.stop_event.is_set():
             changes = self.detect_changes()
             if changes:
                 for callback in self.callbacks:
                     callback(changes)
-            time.sleep(self.check_interval)
+            self.stop_event.wait(self.check_interval)
             
     def start_monitoring(self):
         """
         Start monitoring Search Index for changes in separate thread
         """
+        
+        self.monitor_thread = threading.Thread(target=self._run_monitor)
+        self.stop_event = threading.Event()
         self.monitor_thread.start()
     
     def stop_monitoring(self):

@@ -1,7 +1,7 @@
 import os, re
 import platform
 from collections import defaultdict
-from .constants import parsable_exts
+from .constants import parsable_exts, WIN_SYSINDEX_TO_COLS
 from pathlib import Path
 
 def convert_gps_info_to_lat_lon_alt(gpsInfo):
@@ -110,7 +110,7 @@ def format_sqlrows_to_dict(rows, description):
     formatted_dict = {}
     for row in rows:
         item = {}
-        item.update({column_names[i]: row[i] for i in range(len(row))})
-        formatted_dict[item["System.ItemPathDisplay"]] = item
+        item.update({WIN_SYSINDEX_TO_COLS.get(column_names[i]): row[i] for i in range(len(row))})
+        formatted_dict[item["path"]] = item
     
     return formatted_dict

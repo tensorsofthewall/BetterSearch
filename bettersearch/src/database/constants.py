@@ -1,8 +1,8 @@
 # Types of files to parse
 parsable_exts = {
     'mupdf': [
-        'pdf','xps','fb2','epub',
-        'mobi', 'xlsx', 'pptx'
+        '.pdf','.xps','.fb2','.epub',
+        '.mobi', '.cbz',
     ],
     'ffmpeg_audio': [
         # Audio
@@ -168,8 +168,10 @@ CREATE TABLE IF NOT EXISTS index_maintenance (
 # Win Search Index constants
 WIN_CONN_STRING = 'Provider=Search.CollatorDSO;' \
               'Extended Properties=\"Application=Windows\"'
-              
-WIN_SYSTEMINDEX_COLS = {
+
+
+# When making changes to either of the next two, ensure the changes reflect in both dictionaries
+WIN_COLS_TO_SYSINDEX = {
     "author": "System.ItemAuthors",
     "date": "System.ItemDate",
     "date_modified": "System.DateModified",
@@ -192,6 +194,31 @@ WIN_SYSTEMINDEX_COLS = {
     # ...more...
 }
 
+WIN_SYSINDEX_TO_COLS = {
+    "SYSTEM.ITEMAUTHORS": "author",
+    "SYSTEM.ITEMDATE": "date",
+    "SYSTEM.DATEMODIFIED": "date_modified",
+    "SYSTEM.DATEACCESSED": "date_accessed",
+    # The extension of a file, without the dot at
+    # the beginning
+    "SYSTEM.ITEMTYPE": "fileext",
+    "SYSTEM.ITEMPATHDISPLAY": "path",
+    # Windows Search intern rank of the file
+    "SYSTEM.SEARCH.RANK": "rank",
+    # Mimetype of a file
+    "MIMETYPE": "mimetype",
+    "SYSTEM.ITEMURL": "url",
+    # Filename: Same like os.path.basename(path)
+    "SYSTEM.ITEMNAME": "name",
+    # Size of a file in Bytes
+    "SYSTEM.SIZE": "size",
+    # unknowen function
+    "SYSTEM.KIND": "kind",
+    # ...more...
+}
+
+
+
 # Schema description
 WIN_SYSTEMINDEX_SCHEMA_DESCRIPTION = {
     "author": "List of authors associated with a file.",
@@ -208,7 +235,7 @@ WIN_SYSTEMINDEX_SCHEMA_DESCRIPTION = {
     "kind": "Categorizes the item into a broad type (e.g., document, music, picture, video).",
 }
 
-# SystemIndex Table Info for LLM
+# SystemIndex Table Info for LLM (Llama-sqlcoder)
 WIN_SYSTEMINDEX_TABLE_INFO = '''
 CREATE TABLE SystemIndex (
     author TEXT,
