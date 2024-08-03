@@ -1,4 +1,4 @@
 __MODELS__ = [
-    "meta-llama/Meta-Llama-3-8B-Instruct"
-    "meta-llama/Llama-2-7b-chat-hf"
+    "sandeshb/llama-3-sqlcoder-8b-int8-ov"
+    "defog/llama-3-sqlcoder-8b"
 ]

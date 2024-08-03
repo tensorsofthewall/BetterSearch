@@ -9,6 +9,7 @@ from collections import defaultdict
 from typing import Callable, List, Dict
 import pathlib
 import threading
+from tqdm import tqdm
 
 import adodbapi as OleDb
 import chromadb
@@ -18,8 +19,10 @@ from . import constants
 from .parse import parse_file_contents
 from .util import create_init_config, is_sql_query, format_sqlrows_to_text, format_sqlrows_to_dict
 from .embedding_model import EmbeddingModelFunction
-from tqdm import tqdm
 
+
+import logging
+logger = logging.getLogger(__name__)
 
 # WIP Required Only for Linux (Use Windows Search Index DB for Windows)
 class LinuxFileIndexer:
@@ -227,8 +230,14 @@ class LinuxFileIndexer:
 
 
 # Vector Database Class
-class VectorDB():
-    def __init__(self, vector_db_path:str="better_search_content_db", embd_model_name="Alibaba-NLP/gte-base-en-v1.5", chunk_size=512, chunk_overlap=128, top_k=1, batch_size=500):
+class VectorDB:
+    def __init__(self, 
+                 vector_db_path: str = "better_search_content_db", 
+                 embedding_model_name: str = "Alibaba-NLP/gte-base-en-v1.5", 
+                 chunk_size: int = 512, chunk_overlap: int = 128, top_k: int = 1, 
+                 batch_size: int = 500, cache_dir: str = None, 
+                 **kwargs
+                 ):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.db = chromadb.PersistentClient(
@@ -237,7 +246,7 @@ class VectorDB():
         )
         self.collection = self.db.get_or_create_collection(
             name="file-content", 
-            embedding_function=EmbeddingModelFunction(model_name=embd_model_name)
+            embedding_function=EmbeddingModelFunction(model_name=embedding_model_name, cache_dir=cache_dir)
         )
         self._top_k = top_k
         self.batch_size = batch_size
@@ -250,7 +259,7 @@ class VectorDB():
     def top_k(self, value):
         self._top_k = value
     
-    def _create_docs_for_db(self, file_path):
+    def _create_docs_for_db(self, file_path=None, date_modified=None):
         content = parse_file_contents(file_path)
         _, (_, ext) = os.path.basename(os.path.dirname(file_path)), os.path.splitext(os.path.basename(file_path))
         if isinstance(content, str):
@@ -261,35 +270,36 @@ class VectorDB():
                 splitter = RecursiveCharacterTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
             
             docs = [doc.page_content for doc in splitter.create_documents([content])]
-            metadatas = [{"path": f"{file_path}", "fileext": f"{ext}"} for _ in range(len(docs))]
+            metadatas = [{"path": f"{file_path}", "fileext": f"{ext}", "date_modified": str(date_modified)} for _ in range(len(docs))]
             ids = [f"{file_path}_{i+1}" for i in range(len(docs))]
-            
             return {"documents": docs, "metadatas": metadatas, "ids": ids}, len(docs)
         else:
-            return None
+            return None,None
     
     def add_to_collection(self, file_path=None,date_modified=None):
         try:
-            data, num_docs = self._create_docs_for_db(file_path=file_path)
+            data, num_docs = self._create_docs_for_db(file_path=file_path, date_modified=date_modified)
             for i in range(0, num_docs, self.batch_size):
                 self.collection.add(
                     documents=data.get("documents")[i:i+self.batch_size],
                     metadatas=data.get("metadatas")[i:i+self.batch_size],
                     ids=data.get("ids")[i:i+self.batch_size],
                 )
-        except:
+        except Exception as e:
+            logger.exception(e)
             pass
     
     def update_to_collection(self, file_path=None, date_modified=None):
         try:
-            data, num_docs = self._create_docs_for_db(file_path=file_path)
+            data, num_docs = self._create_docs_for_db(file_path=file_path, date_modified=date_modified)
             for i in range(0, num_docs, self.batch_size):
                 self.collection.update(
                     documents=data.get("documents")[i:i+self.batch_size],
                     metadatas=data.get("metadatas")[i:i+self.batch_size],
                     ids=data.get("ids")[i:i+self.batch_size],
                 )
-        except:
+        except Exception as e:
+            logger.exception(e)
             pass
     
     def delete_from_collection(self, file_path=None):
@@ -298,7 +308,7 @@ class VectorDB():
         )
     
     def update_collection(self, change_list):
-        for change in change_list:
+        for change in tqdm(change_list):
             change_type, file_path, date_modified = itemgetter("ChangeType","path","date_modified")(change)
             if change_type == 'Deleted':
                 self.delete_from_collection(file_path=file_path)
@@ -309,6 +319,12 @@ class VectorDB():
             else:
                 # Change type is not defined
                 pass
+            
+    def query_collection(self, query):
+        return self.collection.query(
+            query_texts=[query],
+            n_results=self.top_k
+        )
         
     
     
@@ -316,8 +332,8 @@ class VectorDB():
 
 
 # Windows Search Indexer
-class WindowsFileIndexer():
-    def __init__(self, vector_db_path:str="better_search_content_db",config_file="./config.json", log_file="indexer.log", check_interval=30):
+class WindowsFileIndexer:
+    def __init__(self, vector_db_path: str = "better_search_content_db", check_interval: int = 30):
         self.conn = OleDb.connect(constants.WIN_CONN_STRING)
         self.vector_db = VectorDB(vector_db_path=vector_db_path)
         self.check_interval = check_interval
@@ -326,9 +342,10 @@ class WindowsFileIndexer():
         self.callbacks = [self.vector_db.update_collection]
         self.current_state = {}
         
-        self.db_ready_event = threading.Event()
+        self._db_ready_event = threading.Event()
         
         self.start_db_thread = threading.Thread(target=self.start_db)
+        self.start_db_thread.setDaemon(True)
         self.start_db_thread.start()
         
     def register_callback(self, callback: Callable[[List[Dict]], None]):
@@ -366,10 +383,16 @@ class WindowsFileIndexer():
             for callback in self.callbacks:
                 callback(changes)
         
-        self.db_ready_event.set()
+        self._db_ready_event.set()
         self.start_monitoring()
-        
-        
+    
+    @property 
+    def db_ready(self):
+        return self._db_ready_event.is_set()
+    
+    @property
+    def table_info(self):
+        return constants.WIN_SYSTEMINDEX_TABLE_METADATA
     
     def get_current_state(self, columns=["path","date_modified"],order_type="date_modified"):
         """
@@ -378,8 +401,7 @@ class WindowsFileIndexer():
         Returns:
             dict: Item Path and Item Details
         """
-        query = (
-'''SELECT {}, {} FROM "SystemIndex" WHERE WorkId IS NOT NULL AND scope='file:' AND Contains(System.ItemType, '{}') ORDER BY {} DESC'''.format(*itemgetter(*columns)(constants.WIN_COLS_TO_SYSINDEX),'" OR "'.join(constants.parsable_exts.get('mupdf')), constants.WIN_COLS_TO_SYSINDEX.get(order_type))
+        query = ("""SELECT {}, {} FROM "SystemIndex" WHERE WorkId IS NOT NULL AND scope='file:' AND Contains(System.ItemType, '{}') ORDER BY {} DESC""".format(*itemgetter(*columns)(constants.WIN_COLS_TO_SYSINDEX),'" OR "'.join(constants.parsable_exts.get('mupdf')), constants.WIN_COLS_TO_SYSINDEX.get(order_type))
         )
         with self.conn:
             cursor = self.conn.cursor()
@@ -417,7 +439,7 @@ class WindowsFileIndexer():
         """
         Monitor table for changes and call registered callbacks when changes are detected
         """
-        self.db_ready_event.wait()
+        self._db_ready_event.wait()
         self.current_state = self.get_current_state()
         while not self.stop_event.is_set():
             changes = self.detect_changes()
@@ -432,6 +454,7 @@ class WindowsFileIndexer():
         """
         
         self.monitor_thread = threading.Thread(target=self._run_monitor)
+        # self.monitor_thread.setDaemon(True)
         self.stop_event = threading.Event()
         self.monitor_thread.start()
     
@@ -441,18 +464,25 @@ class WindowsFileIndexer():
         """
         self.stop_event.set()
         self.monitor_thread.join()
-
-    @property
-    def table_info(self):
-        return constants.WIN_SYSTEMINDEX_TABLE_INFO
+        
+    def close(self):
+        self.stop_monitoring()
+        self.conn.close()
+        self.start_db_thread.join()
     
-    def query(self, query):
-        if is_sql_query(query):
+    def query(self, query, nlq):
+        if any(fail in query for fail in ["I do not know", "I don't know", "i do not know", "i don't know"]):
+            query_context = self.vector_db.query_collection(query=nlq)
+        elif is_sql_query(query):
             with self.conn:
                 cursor = self.conn.cursor()
                 cursor.execute(query)
                 result = cursor.fetchall()
-                result = format_sqlrows_to_text(result, cursor.get_description())
-            return result
+                if len(result) < 1:
+                    query_context = self.vector_db.query_collection(query=nlq)
+                else:
+                    query_context = format_sqlrows_to_text(result, cursor.get_description())
         else:
-            pass
+            query_context=""
+        
+        return query_context

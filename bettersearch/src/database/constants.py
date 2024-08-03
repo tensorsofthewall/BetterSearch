@@ -1,3 +1,7 @@
+##############################################################################################################################################################################
+##########################                     Types of files that are parsable. Currently only support mupdf type                    ########################################
+##############################################################################################################################################################################
+
 # Types of files to parse
 parsable_exts = {
     'mupdf': [
@@ -70,6 +74,9 @@ parsable_exts = {
     ]
 }
 
+##############################################################################################################################################################################
+##########################                                     Linux SQL File Index constants, yet to be tested.                      ########################################
+##############################################################################################################################################################################
 
 # Table Creation constants
 file_metadata_create = '''
@@ -164,11 +171,42 @@ CREATE TABLE IF NOT EXISTS index_maintenance (
             ON DELETE CASCADE
         )'''
         
-        
+
+##############################################################################################################################################################################
+##########################                                     Windows Search Index constants, using adodbapi.                        ########################################
+##############################################################################################################################################################################
+
+
 # Win Search Index constants
 WIN_CONN_STRING = 'Provider=Search.CollatorDSO;' \
               'Extended Properties=\"Application=Windows\"'
 
+# SystemIndex Table Metadata for LLM (Llama-sqlcoder)
+WIN_SYSTEMINDEX_TABLE_METADATA = '''
+CREATE TABLE SystemIndex (
+    System.ItemAuthors TEXT, -- List of authors associated with a file
+    System.ItemDate DATETIME, -- Primary date and time of interest for an item. Usually signifies date and time of creation
+    System.DateModified DATETIME, -- The date and time the file was last modified
+    System.DateAccessed DATETIME, -- The date and time the file was last opened
+    System.ItemType VARCHAR(255), -- Signifies type of file by extension, including leading period
+    System.ItemPathDisplay TEXT UNIQUE, -- Unique Full path of a file
+    System.Search.Rank INT, -- Relevance rank of a file. Used only for retrieval, not search
+    MimeType VARCHAR(255), -- MIME type of the file
+    System.ItemUrl VARCHAR(255), -- Specifies URL of the file
+    System.ItemName VARCHAR(255), -- Name of the file
+    System.Size BIGINT, -- Size of the file in bytes
+    System.Kind VARCHAR(255) -- Categorizes the item into a broad type (e.g., document, music, picture, video)
+)
+'''
+
+
+
+
+
+##############################################################################################################################################################################
+##########################                     The following constants may not be required after all. Deprecated for now.             ########################################
+##########################                         Will remove eventually if LLM function calling is not implemented.                 ########################################
+##############################################################################################################################################################################
 
 # When making changes to either of the next two, ensure the changes reflect in both dictionaries
 WIN_COLS_TO_SYSINDEX = {
@@ -217,38 +255,18 @@ WIN_SYSINDEX_TO_COLS = {
     # ...more...
 }
 
-
-
 # Schema description
 WIN_SYSTEMINDEX_SCHEMA_DESCRIPTION = {
-    "author": "List of authors associated with a file.",
-    "date": "Primary date and time of interest for an item. Usually signifies date and time of creation.",
-    "date_modified": "The date and time the file was last modified.",
-    "date_accessed": "The date and time the file was last opened.",
-    "fileext": "Signifies type of file by extension, including leading period.",
-    "path": "Full path of a file, which is unique.",
-    "rank": "Relevance rank of a file. Used only for retrieval, not search.",
-    "mimetype": "MIME type of the file.",
-    "url": "Specifies URL of the file.", 
-    "name": "Name of the file.",
-    "size": "Size of the file in bytes.",
-    "kind": "Categorizes the item into a broad type (e.g., document, music, picture, video).",
+    "author": "List of authors associated with a file",
+    "date": "Primary date and time of interest for an item. Usually signifies date and time of creation",
+    "date_modified": "The date and time the file was last modified",
+    "date_accessed": "The date and time the file was last opened",
+    "fileext": "Signifies type of file by extension, including leading period",
+    "path": "Full path of a file, which is unique",
+    "rank": "Relevance rank of a file. Used only for retrieval, not search",
+    "mimetype": "MIME type of the file",
+    "url": "Specifies URL of the file", 
+    "name": "Name of the file",
+    "size": "Size of the file in bytes",
+    "kind": "Categorizes the item into a broad type (e.g., document, music, picture, video)",
 }
-
-# SystemIndex Table Info for LLM (Llama-sqlcoder)
-WIN_SYSTEMINDEX_TABLE_INFO = '''
-CREATE TABLE SystemIndex (
-    author TEXT,
-    date DATETIME,
-    date_modified DATETIME,
-    date_accessed DATETIME,
-    fileext VARCHAR(255),
-    path TEXT UNIQUE,
-    rank INT,
-    mimetype VARCHAR(255),
-    url VARCHAR(255),
-    name VARCHAR(255),
-    size BIGINT,
-    kind VARCHAR(255)
-)
-'''
