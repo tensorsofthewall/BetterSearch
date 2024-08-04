@@ -1,9 +1,11 @@
-import os, re, sys
+import os, re, sys, pathlib
 import shutil
 from collections import defaultdict
 import sqlparse
+from sqlparse.tokens import Keyword, DML
+from sqlparse.sql import Identifier, IdentifierList
 
-# Clean output of Llama-SQLCoder 
+# Clean the output of Llama-SQLCoder by formatting and removing aliases.
 def clean_sqlcoder_output(sql_query, table_info, table_name):
     columns = extract_columns_from_metadata(table_info)
     return remove_aliases_from_query(
@@ -17,6 +19,7 @@ def clean_sqlcoder_output(sql_query, table_info, table_name):
         table_name=table_name
     )
 
+# Remove table aliases from the SQL query and replace them with fully qualified column names.
 def remove_aliases_from_query(query, columns, table_name):
     # Find table aliases in the FROM and JOIN clauses
     table_alias_pattern = re.compile(r'\b(FROM|JOIN)\s+' + table_name + r'\s+(?:AS\s+)?(\w+)\b', re.IGNORECASE)
@@ -33,15 +36,109 @@ def remove_aliases_from_query(query, columns, table_name):
     
     return query
 
+# Extract fully qualified column names from the table metadata.
 def extract_columns_from_metadata(metadata):
     # Match fully qualified column names
     column_pattern = re.compile(r'\b(\w+\.\w+)\s+\w+', re.IGNORECASE)
     columns = column_pattern.findall(metadata)
     return columns
 
+# Remove 'NULLS LAST' from the ORDER BY clause in the SQL query.
+def remove_nulls_last(query):
+    parsed = sqlparse.parse(query)
+    statement = parsed[0]
+    
+    new_tokens = []
+    order_by_found = False
+
+    for token in statement.tokens:
+        if token.ttype is Keyword and token.value.upper() == 'ORDER BY':
+            order_by_found = True
+            new_tokens.append(token)
+            continue
+
+        if order_by_found:
+            if token.ttype is None and 'NULLS LAST' in token.value.upper():
+                new_value = token.value.upper().replace('NULLS LAST', '').strip()
+                new_tokens.append(sqlparse.sql.Token(None, new_value))
+                order_by_found = False  # Process the ORDER BY clause only once
+            else:
+                new_tokens.append(token)
+        else:
+            new_tokens.append(token)
+    
+    corrected_query = ''.join(str(token) for token in new_tokens)
+    return corrected_query
+
+# Validate and correct SQL query
+def validate_correct_sql_query(input_query):
+    parsed = sqlparse.parse(input_query)
+    statement = parsed[0]
+    
+    # Find the SELECT and ORDER BY clauses
+    select_token_index = None
+    order_by_token_index = None
+    top_token_index = None
+    select_identifiers = None
+    order_by_identifiers = None
+    
+    for i, token in enumerate(statement.tokens):
+        if token.ttype is Keyword and token.value.upper() == 'SELECT':
+            select_token_index = i
+        elif token.ttype is Keyword and token.value.upper() == 'ORDER BY':
+            order_by_token_index = i
+        elif token.ttype is Keyword and token.value.upper() == 'TOP':
+            top_token_index = i
+
+    if select_token_index is None or order_by_token_index is None:
+        return input_query
+
+    # Extract columns after SELECT and before FROM
+    select_identifiers = statement.tokens[select_token_index + 1]
+    if isinstance(select_identifiers, IdentifierList):
+        select_columns = select_identifiers.get_identifiers()
+    elif isinstance(select_identifiers, Identifier):
+        select_columns = [select_identifiers]
+    else:
+        return input_query
+    
+    # Extract columns after ORDER BY
+    order_by_identifiers = statement.tokens[order_by_token_index + 2]
+    if isinstance(order_by_identifiers, IdentifierList):
+        order_by_columns = order_by_identifiers.get_identifiers()
+    elif isinstance(order_by_identifiers, Identifier):
+        order_by_columns = [order_by_identifiers]
+    else:
+        return input_query
+
+    # Build the corrected query
+    new_query = []
+    for i, token in enumerate(statement.tokens):
+        if i == select_token_index:
+            new_query.append('SELECT')
+            if top_token_index is not None:
+                top_value = statement.tokens[top_token_index + 2]
+                new_query.append(f" TOP {top_value}")
+            for col in select_columns:
+                new_query.append(f" {col},")
+            new_query[-1] = new_query[-1][:-1]  # Remove trailing comma
+        elif i == order_by_token_index:
+            new_query.append(' ORDER BY')
+            for col in order_by_columns:
+                new_query.append(f" {col},")
+            new_query[-1] = new_query[-1][:-1]  # Remove trailing comma
+        else:
+            new_query.append(str(token).strip())
+            
+    new_query = ' '.join(new_query).strip()
+    
+    new_query = remove_nulls_last(new_query)
+
+    return new_query
+
 
 # Get model and tokenizer based on model type (OpenVINO vs Regular PyTorch/HuggingFace)
-def get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag):
+def get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **kwargs):
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=model_name, cache_dir=cache_dir, use_fast=True)
     if "ov" in model_name:
@@ -59,7 +156,7 @@ def get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag):
             use_cache=kv_cache_flag,
             quantization_config=bnb_config,
             trust_remote_code=True,
-            device_map="auto"
+            device_map="auto", **kwargs
             )
     
     return model, tokenizer
@@ -83,10 +180,10 @@ def get_table_info():
         pass
 
 # Get File Indexer    
-def get_file_indexer(db_path):
+def get_file_indexer(**kwargs):
     if sys.platform == "win32":
         from ..database import WindowsFileIndexer
-        return WindowsFileIndexer(vector_db_path=db_path)
+        return WindowsFileIndexer(**kwargs)
     elif sys.platform == "linux" or sys.platform == "linux2":
         # For Linux DB
         # from ..database import LinuxFileIndexer
@@ -96,7 +193,7 @@ def get_file_indexer(db_path):
         pass
 
 # Method to download and save new models in OpenVINO IR Format
-def download_and_save_model(model_id, save_dir, fp_gen = "INT4"):
+def download_and_save_ov_models(model_id, save_dir, fp_gen = "INT4"):
     from optimum.intel.openvino import OVModelForCausalLM
     
     _, model_name = model_id.split("/")

@@ -1,0 +1,10 @@
+{
+    "model_name": "sandeshb/llama-3-sqlcoder-8b-int8-ov",
+    "cache_dir": "cache_dir/",
+    "bnb_config": null,
+    "kv_cache_flag": true,
+    "num_beams": 4,
+    "db_path": "./better_search_content_db",
+    "embd_model_device": "cuda",
+    "check_interval": 30
+}

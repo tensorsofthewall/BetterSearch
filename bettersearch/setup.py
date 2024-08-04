@@ -1,8 +1,7 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
-DESCRIPTION = "An improved file search system that draws inspiration from Windows Search and indexes both file properties and file content, allowing local LLMs to search and use this data as context for answering user queries."
-
+VERSION = '0.1.0'
+DESCRIPTION = "An improved file search system that draws inspiration from traditional Search and combines with vector databases, allowing local LLMs to search files as context for answering user queries."
 
 setup(
     name="bettersearch",
@@ -15,4 +14,5 @@ setup(
         "pillow",
         "pymupdf4llm"    
     ],
+    url="https://github.com/sandesh-bharadwaj/BetterSearch",
 )

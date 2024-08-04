@@ -5,8 +5,10 @@ Follow instructions to the letter, and answer questions without making any addit
 Generate a Windows Search SQL query to answer this question: `{user_question}`
 - If the question cannot be answered given the database schema, return "I do not know". Follow the database schema strictly.
 - If the question requires additional information that might not be available in the database, return "I do not know".
-- recall that the current date and time in YYYY-MM-DD HH:MM:SS format is {date_time}
-- Use TOP instead of LIMIT in the SQL query.
+- recall that the current date and time in YYYY-MM-DD HH:MM:SS format is {date_time}.
+- The Windows Search SQL query uses the following syntaxes: `SELECT [TOP <positive integer>] <columns> FROM SystemIndex [WHERE <conditions>] [ORDER BY <column>]` and `GROUP ON <column> [<ranges>] [AGGREGATE <aggregate_list>] [ORDER BY <column> [ASC/DESC]] OVER (<GROUP ON ...> | <SELECT...>)`
+- Instead of CONVERT, LIMIT, SQL-standard regular expressions, use CAST, TOP, and CONTAINS or LIKE functions instead.
+- NULLS LAST is not supported.
 
 DDL statements:
 {table_metadata_string}
