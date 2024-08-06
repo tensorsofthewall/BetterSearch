@@ -5,6 +5,10 @@
     "kv_cache_flag": true,
     "num_beams": 4,
     "db_path": "./better_search_content_db",
-    "embd_model_device": "cuda",
-    "check_interval": 30
+    "embd_model_device": "cpu",
+    "check_interval": 30,
+    "chunk_size": 500,
+    "chunk_overlap": 150,
+    "chunk_batch_size": 250,
+    "top_k": 3
 }

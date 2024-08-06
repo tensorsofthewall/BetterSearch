@@ -28,8 +28,8 @@ class BetterSearchPipeline:
         self.file_indexer = get_file_indexer(db_path=db_path, device=embd_model_device, **kwargs)
         self.model, self.tokenizer = get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **kwargs)
         self.num_beams = num_beams
-        self.sqlPrompt_format = get_prompt_format(Path(BASE_DIR,"./sqlcoder_prompt.md"))
-        self.llamaPrompt_format = get_prompt_format(Path(BASE_DIR,"./llama_prompt.md"))
+        self.sqlPrompt_format = get_prompt_format(Path(BASE_DIR,"sqlcoder_prompt.md"))
+        self.llamaPrompt_format = get_prompt_format(Path(BASE_DIR,"llama_prompt.md"))
         self.table_metadata_string, self.table_name = get_table_info()
         self.file_formats = {k: ", ".join(str(x) for x in v) for k,v in parsable_exts.items()}
         self.history = []
@@ -56,7 +56,7 @@ class BetterSearchPipeline:
             self.model.generate(
                 **self.tokenizer(
                     curr_prompt, return_tensors="pt"
-                ),
+                ).to(self.model.device),
                 num_return_sequences=1,
                 eos_token_id=self.tokenizer.eos_token_id,
                 pad_token_id=self.tokenizer.pad_token_id,
@@ -72,7 +72,7 @@ class BetterSearchPipeline:
         output = validate_correct_sql_query(output)
         
         # Second step: Use user_context (SQL query output or content search) to get the final answer.
-        user_context = self.file_indexer.query(output, user_question)
+        user_context, answer_preface = self.file_indexer.query(output, user_question)
         curr_prompt = self.llamaPrompt_format.format(
             user_question=user_question,
             user_context=user_context
@@ -97,7 +97,7 @@ class BetterSearchPipeline:
         
         # Clean the final output
         # Probably should do comprehensive cleanup for assistant answers, we'll see how things go
-        output = output.replace('```','')
+        output = answer_preface+output.replace('```','')
         
         return output
         

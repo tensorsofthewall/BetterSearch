@@ -8,6 +8,7 @@ Generate a Windows Search SQL query to answer this question: `{user_question}`
 - recall that the current date and time in YYYY-MM-DD HH:MM:SS format is {date_time}.
 - The Windows Search SQL query uses the following syntaxes: `SELECT [TOP <positive integer>] <columns> FROM SystemIndex [WHERE <conditions>] [ORDER BY <column>]` and `GROUP ON <column> [<ranges>] [AGGREGATE <aggregate_list>] [ORDER BY <column> [ASC/DESC]] OVER (<GROUP ON ...> | <SELECT...>)`
 - Instead of CONVERT, LIMIT, SQL-standard regular expressions, use CAST, TOP, and CONTAINS or LIKE functions instead.
+- COUNT is not supported.
 - NULLS LAST is not supported.
 
 DDL statements:

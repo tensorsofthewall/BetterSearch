@@ -1,10 +1,16 @@
 {
     "model_name": "defog/llama-3-sqlcoder-8b",
     "cache_dir": "cache_dir/",
-    "bnb_config": null,
+    "bnb_config": {
+        "load_in_8bit": true
+    },
     "kv_cache_flag": true,
     "num_beams": 4,
     "db_path": "./better_search_content_db",
     "embd_model_device": "cuda",
-    "check_interval": 30
+    "check_interval": 30,
+    "chunk_size": 500,
+    "chunk_overlap": 150,
+    "chunk_batch_size": 500,
+    "top_k": 3
 }

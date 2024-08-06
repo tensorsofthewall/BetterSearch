@@ -7,7 +7,6 @@ import sqlite3
 import pathlib
 from collections import defaultdict
 from typing import Callable, List, Dict
-from pathlib import Path
 import threading
 from tqdm import tqdm
 
@@ -17,14 +16,14 @@ from langchain.text_splitter import MarkdownTextSplitter, RecursiveCharacterText
 
 from . import constants
 from .parse import parse_file_contents
-from .util import create_init_config, is_sql_query, format_sqlrows_to_text, format_sqlrows_to_dict
+from .util import create_init_config, is_sql_query, format_sqlrows_to_text, format_sqlrows_to_dict, flatten
 from .embedding_model import EmbeddingModelFunction
 
 
 import logging
 logger = logging.getLogger(__name__)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__name__))
 
 # Windows Search Indexer
 class WindowsFileIndexer:
@@ -39,7 +38,7 @@ class WindowsFileIndexer:
             **kwargs: Additional keyword arguments for the VectorDB initialization.
         """
         self.conn = OleDb.connect(constants.WIN_CONN_STRING)
-        self.vector_db = VectorDB(vector_db_path=Path(BASE_DIR, vector_db_path), device=device, **kwargs)
+        self.vector_db = VectorDB(vector_db_path=os.path.join(BASE_DIR, vector_db_path), device=device, **kwargs)
         self.check_interval = check_interval
         self.last_check = None
         
@@ -202,8 +201,9 @@ class WindowsFileIndexer:
         Returns:
             str: Context for the next generation step - from vector database or search index.
         """
+        answer_preface = ""
         if any(fail in query.lower() for fail in ["i don't know", "i do not know"]):
-            query_context = self.vector_db.query_collection(query=user_question)
+            query_context, answer_preface = self.vector_db.query_collection(query=user_question), "I was able to check file contents for this.\n\n "
         elif is_sql_query(query):
             with self.conn:
                 cursor = self.conn.cursor()
@@ -211,15 +211,15 @@ class WindowsFileIndexer:
                     cursor.execute(query)
                     result = cursor.fetchall()
                     if len(result) < 1:
-                        query_context = self.vector_db.query_collection(query=user_question)
+                        query_context, answer_preface = self.vector_db.query_collection(query=user_question), "I was unable to query search index, the following answer may be incorrect.\n\n" 
                     else:
-                        query_context = format_sqlrows_to_text(result, cursor.get_description())
+                        query_context, answer_preface = format_sqlrows_to_text(result, cursor.get_description()), "I was able to query search index.\n\n"
                 except:
-                    query_context = self.vector_db.query_collection(query=user_question)
+                    query_context, answer_preface = self.vector_db.query_collection(query=user_question), "I was unable to query search index, the following answer may be incorrect.\n\n"
         else:
             query_context=""
         
-        return query_context
+        return query_context, answer_preface
     
 
 # Vector Database Class
@@ -227,8 +227,8 @@ class VectorDB:
     def __init__(self, 
                  vector_db_path: str = "better_search_content_db", 
                  embedding_model_name: str = "Alibaba-NLP/gte-base-en-v1.5", 
-                 chunk_size: int = 512, chunk_overlap: int = 128, top_k: int = 1, 
-                 batch_size: int = 500, cache_dir: str = None, device: str = "cpu",
+                 chunk_size: int = 500, chunk_overlap: int = 200, top_k: int = 5, 
+                 chunk_batch_size: int = 500, cache_dir: str = None, device: str = "cpu",
                  **kwargs
                  ):
         """
@@ -266,7 +266,7 @@ class VectorDB:
         )
         
         self._top_k = top_k
-        self.batch_size = batch_size
+        self.batch_size = chunk_batch_size
     
     @property
     def top_k(self):
@@ -400,10 +400,11 @@ class VectorDB:
         Returns:
             list: Query results.
         """
-        return self.collection.query(
+        docs = self.collection.query(
             query_texts=[query],
             n_results=self.top_k
-        )
+        ).get('documents')[0]
+        return "\n\n".join(str(x) for x in flatten(docs))
         
 
 # WIP - Linux Search Indexer (custom) 

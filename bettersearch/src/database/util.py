@@ -114,3 +114,6 @@ def format_sqlrows_to_dict(rows, description):
         formatted_dict[item["path"]] = item
     
     return formatted_dict
+
+def flatten(query_list):
+    return [subitem for item in query_list for subitem in item]

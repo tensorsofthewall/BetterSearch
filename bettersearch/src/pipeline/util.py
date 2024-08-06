@@ -1,8 +1,8 @@
-import os, re, sys, pathlib
+import os, re, sys
 import shutil
 from collections import defaultdict
 import sqlparse
-from sqlparse.tokens import Keyword, DML
+from sqlparse.tokens import Keyword
 from sqlparse.sql import Identifier, IdentifierList
 
 # Clean the output of Llama-SQLCoder by formatting and removing aliases.
@@ -156,7 +156,7 @@ def get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **
             use_cache=kv_cache_flag,
             quantization_config=bnb_config,
             trust_remote_code=True,
-            device_map="auto", **kwargs
+            device_map="auto", 
             )
     
     return model, tokenizer

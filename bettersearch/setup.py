@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 VERSION = '0.1.0'
 DESCRIPTION = "An improved file search system that draws inspiration from traditional Search and combines with vector databases, allowing local LLMs to search files as context for answering user queries."

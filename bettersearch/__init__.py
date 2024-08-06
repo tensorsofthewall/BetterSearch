@@ -1,4 +1,4 @@
-from .src.pipeline.pipeline import BetterSearchPipeline
+# from .app import BetterSearchApp
 # from .src.pipeline.util import get_available_models
 
 __SUPPORTED_MODELS__ = [

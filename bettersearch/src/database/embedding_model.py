@@ -67,9 +67,7 @@ class EmbeddingModelFunction(EmbeddingFunction[Documents]):
             with torch.inference_mode():
                 outputs = self._model(**inputs)
         
-        embeddings = outputs.last_hidden_state.mean(dim=1)
-        if self._device.type == "cpu":
-            embeddings = embeddings.cpu()
+        embeddings = outputs.last_hidden_state.mean(dim=1).cpu()
             
         # Normalize and return the embeddings
         return [e.tolist() for e in self._normalize(embeddings)]
