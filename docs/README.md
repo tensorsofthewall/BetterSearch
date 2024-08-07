@@ -192,7 +192,7 @@ To create your own configuration files, follow the structure provided in any of 
   + *"sandeshb/llama-3-sqlcoder-8b-int8-ov"* - If you have an Intel CPU or GPU. Note that AMD CPUs may not experience the same level of speedup with OpenVINO models.
 - **"cache_dir"**: The cache directory where the models are downloaded (*`"cache_dir/"`* by default).
 - **"bnb_config"**: Configuration for [BitsAndBytes](https://huggingface.co/docs/bitsandbytes/main/en/index); refer to the documentation for more details.
-- **"kv_cache_flag"**: Sets the `use_cache` flag for generation models in HuggingFace Transformers. It is recommended to set this to `true` always.
+- **"kv_cache_flag"**: Sets the `use_cache` flag for generation models in Hugging Face Transformers. It is recommended to set this to `true` always.
 - **"num_beams"**: Number of beams for beam search (default=`4`).
 - **"db_path"**: Location of the content index (Chroma)(*`"better_search_content_db/"`* by default).
 - **"embd_model_device"**: Decides where *gte-v1.5* will be loaded. (Options: `"cpu"`, `"cuda"`)
