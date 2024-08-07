@@ -25,7 +25,7 @@ class BetterSearchPipeline:
             embd_model_device (str): Device to run the embedding model on.
             **kwargs: Additional keyword arguments.
         """
-        self.file_indexer = get_file_indexer(db_path=db_path, device=embd_model_device, **kwargs)
+        self.file_indexer = get_file_indexer(db_path=db_path, device=embd_model_device, cache_dir=cache_dir, **kwargs)
         self.model, self.tokenizer = get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **kwargs)
         self.num_beams = num_beams
         self.sqlPrompt_format = get_prompt_format(Path(BASE_DIR,"sqlcoder_prompt.md"))
