@@ -125,12 +125,11 @@ BetterSearch employs two state-of-the-art models for embedding and querying:
 
 Ensure you have Python >= 3.9 installed, either through a local setup or virtual environment. I recommend creating a virtual environment using [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) or [venv](https://docs.python.org/3/library/venv.html).
 
-After creating your environment, clone the repo and install the necessary dependencies:
+Using `conda`:
 ```sh
 git clone https://github.com/sandesh-bharadwaj/BetterSearch.git
-cd BetterSearch
-
-pip install -r requirements.txt
+conda create -f bettersearch_env.yml # This creates a conda environment called 'bettersearch' with all dependencies.
+conda activate bettersearch
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -138,6 +137,7 @@ pip install -r requirements.txt
 ## Usage
 To start the application, run:
 ```sh
+cd BetterSearch
 python app.py
 ```
 

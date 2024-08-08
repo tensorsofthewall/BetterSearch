@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 import adodbapi as OleDb
 import chromadb
-from langchain.text_splitter import MarkdownTextSplitter, RecursiveCharacterTextSplitter
+from langchain_text_splitters import MarkdownTextSplitter, RecursiveCharacterTextSplitter
 
 from . import constants
 from .parse import parse_file_contents
