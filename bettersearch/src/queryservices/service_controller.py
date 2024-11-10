@@ -1,6 +1,7 @@
 from typing import Optional
 from .base_service import BaseQueryService
-
+import inspect
+import asyncio
 
 class ServiceController:
     def __init__(self):
@@ -36,7 +37,10 @@ class ServiceController:
         """
         
         if self.service:
-            return self.service.run_query(query, **kwargs)
+            if inspect.iscoroutinefunction(self.service.run_query): # Handle asynchronous queries
+                return asyncio.run(self.service.run_query(query, **kwargs))
+            else:
+                return self.service.run_query(query, **kwargs)
         else:
             raise ValueError("No service set")
         
@@ -48,3 +52,13 @@ class ServiceController:
             service (BaseQueryService|None): The service currently set on this controller, or None if no service is set
         """
         return self.service
+    
+    def stop_service(self):
+        """
+        Stop the currently set service.
+
+        This method stops the service, if a stop method is available.
+        """
+        if self.service:
+            self.service.stop()
+            self.service = None

@@ -6,8 +6,9 @@ import aiohttp
 class FleetQueryService(BaseQueryService):
     def __init__(self, url, api_key, **kwargs):
         """
-        Initialize FleetQueryService.
-
+        Initialize query service for FleetDM (local, cloud, multi device management).
+        
+        For more information on FleetDM, see https://fleetdm.com/docs/
         Args:
             url (str): URL of Fleet instance/server
             api_key (str): API key for Fleet instance/server

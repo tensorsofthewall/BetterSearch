@@ -26,3 +26,12 @@ class BaseQueryService(ABC):
             response (list|obj): Query results
         """
         pass
+    
+    @abstractmethod
+    def stop(self):
+        """
+        Shutdown the service.
+
+        This method is intended to be overridden by subclasses of BaseQueryService.
+        """
+        pass

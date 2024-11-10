@@ -12,7 +12,9 @@ import threading
 class OSQueryService(BaseQueryService):
     def __init__(self):
         """
-        Initialize OSQueryService.
+        Initialize query service for osquery (local device management).
+        
+        For more info on osquery, see https://osquery.readthedocs.io/en/stable/
 
         This initializes an instance of the osquery service, and opens a connection to it.
         """
