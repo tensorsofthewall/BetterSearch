@@ -10,13 +10,18 @@ import pywintypes
 import threading 
 
 class OSQueryService(BaseQueryService):
+    """
+    A query service class for interacting with osquery.
+
+    This class provides a way to run SQL queries on a local device using osquery.
+    It initializes an instance of the osquery service and opens a connection to it.
+
+    See Also:
+        https://osquery.readthedocs.io/en/stable/ for more information on osquery.
+    """
     def __init__(self):
         """
         Initialize query service for osquery (local device management).
-        
-        For more info on osquery, see https://osquery.readthedocs.io/en/stable/
-
-        This initializes an instance of the osquery service, and opens a connection to it.
         """
         
         super().__init__()
@@ -36,6 +41,7 @@ class OSQueryService(BaseQueryService):
         Returns:
             response (dict|obj): Query results
         """
+        
         try:
             result = self.instance.client.query(query)
             if result.status.code != 0:

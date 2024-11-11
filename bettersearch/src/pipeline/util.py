@@ -1,9 +1,11 @@
-import os, re, sys
+import os, re, sys, platform
 import shutil
 from collections import defaultdict
 import sqlparse
 from sqlparse.tokens import Keyword
 from sqlparse.sql import Identifier, IdentifierList
+import psutil
+from typing import Union
 
 # Clean the output of Llama-SQLCoder by formatting and removing aliases.
 def clean_sqlcoder_output(sql_query, table_info, table_name):
@@ -138,7 +140,7 @@ def validate_correct_sql_query(input_query):
 
 
 # Get model and tokenizer based on model type (OpenVINO vs Regular PyTorch/HuggingFace)
-def get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **kwargs):
+def get_local_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **kwargs):
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=model_name, cache_dir=cache_dir, use_fast=True)
     if "ov" in model_name:
@@ -238,3 +240,45 @@ def get_available_models(save_dir):
                     available_models[precision].append(model_name)
     
     return available_models
+
+
+def is_daemon_running(daemon_name):
+    """Check if a daemon or service is running by name, optimized for early exit."""
+    return any(
+        daemon_name in process.info['name'] or 
+        (process.info['cmdline'] and daemon_name in ' '.join(process.info['cmdline']))
+        for process in psutil.process_iter(['name', 'cmdline'])
+        if process.info['name'] or process.info['cmdline']
+    )
+
+def is_osquery_installed(custom_install_path: Union[os.PathLike,str,bytes,int] = None):
+    """
+    Check if osquery is installed.
+
+    Returns:
+        bool: osquery installation status
+    """
+    # First, try find osqueryi in PATH
+    if shutil.which("osqueryi"):
+        return True
+    
+    # Common installation paths for osquery [Linux, Darwin]
+    possible_locations = [
+        "/usr/local/bin/osqueryi",
+        "/usr/bin/osqueryi",
+    ]
+    
+    if custom_install_path:
+        possible_locations.extend([custom_install_path])
+    
+    if platform.system() == "Windows":
+        possible_locations.extend([
+            "C:\\Program Files\\osquery\\osqueryi.exe",
+            "C:\\Program Files (x86)\\osquery\\osqueryi.exe",
+        ])
+    
+    for path in possible_locations:
+        if os.path.isfile(path):
+            return True
+    
+    return False

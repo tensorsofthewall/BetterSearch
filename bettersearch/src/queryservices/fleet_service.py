@@ -4,11 +4,18 @@ import aiohttp
 
 
 class FleetQueryService(BaseQueryService):
+    """
+    A query service class for interacting with FleetDM instances.
+
+    This class provides a way to run SQL queries on a FleetDM instance and retrieve the results.
+    It uses the FleetDM API to send queries and retrieve data.
+
+    See Also:
+        https://fleetdm.com/docs/ for more information on FleetDM.
+    """
     def __init__(self, url, api_key, **kwargs):
         """
         Initialize query service for FleetDM (local, cloud, multi device management).
-        
-        For more information on FleetDM, see https://fleetdm.com/docs/
         Args:
             url (str): URL of Fleet instance/server
             api_key (str): API key for Fleet instance/server

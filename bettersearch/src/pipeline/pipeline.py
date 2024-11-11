@@ -1,6 +1,6 @@
 from transformers import BitsAndBytesConfig
 import datetime
-from .util import clean_sqlcoder_output, get_file_indexer, get_prompt_format, get_model_and_tokenizer, get_table_info, validate_correct_sql_query
+from .util import clean_sqlcoder_output, get_file_indexer, get_prompt_format, get_local_model_and_tokenizer, get_table_info, validate_correct_sql_query
 from pathlib import Path
 import os
 from ..database.constants import parsable_exts
@@ -26,7 +26,7 @@ class BetterSearchPipeline:
             **kwargs: Additional keyword arguments.
         """
         self.file_indexer = get_file_indexer(db_path=db_path, device=embd_model_device, cache_dir=cache_dir, **kwargs)
-        self.model, self.tokenizer = get_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **kwargs)
+        self.model, self.tokenizer = get_local_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_flag, **kwargs)
         self.num_beams = num_beams
         self.sqlPrompt_format = get_prompt_format(Path(BASE_DIR,"sqlcoder_prompt.md"))
         self.llamaPrompt_format = get_prompt_format(Path(BASE_DIR,"llama_prompt.md"))

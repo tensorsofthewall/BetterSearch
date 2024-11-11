@@ -3,6 +3,21 @@ from platformdirs import PlatformDirs
 from bettersearch import APP_NAME, VERSION
 
 class BaseQueryService(ABC):
+    """
+    Abstract base class for query services.
+
+    This class defines a basic structure for query services, including initialization,
+    running SQL queries, and shutting down the service. Subclasses must implement
+    the abstract methods to provide concrete functionality.
+
+    Attributes:
+        platformdirs (PlatformDirs): Platform directories for the application.
+
+    Methods:
+        __init__(**kwargs): Initialize the service.
+        run_query(query, **kwargs): Run a SQL query and return results.
+        stop(): Shutdown the service.
+    """
     @abstractmethod
     def __init__(self, **kwargs):
         """

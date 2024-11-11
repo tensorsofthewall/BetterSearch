@@ -4,6 +4,9 @@ import inspect
 import asyncio
 
 class ServiceController:
+    """
+    ServiceController allows you to manage multiple query services and switch between query services without having to restart the program. 
+    """
     def __init__(self):
         """
         Initialize the service controller.
