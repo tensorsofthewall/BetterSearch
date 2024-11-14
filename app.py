@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QLineEdit, QVBoxLayout, QPushButton, QWidget, QLabel
-from PyQt6.QtGui import QKeyEvent, QTextCursor, QFont, QAction
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
 import sys, os
 import configparser
+
+from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit, QLineEdit, QVBoxLayout, QPushButton, QWidget, QLabel
+from PySide6.QtGui import QKeyEvent, QTextCursor, QFont, QAction
+from PySide6.QtCore import Qt, QThread, Signal
 
 from bettersearch.src.pipeline import BetterSearchPipeline
 import json
@@ -20,7 +21,7 @@ class PipelineWorker(QThread):
     """
     Worker thread to run the pipeline setup without blocking the main UI.
     """
-    finished = pyqtSignal()
+    finished = Signal()
     
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -34,7 +35,7 @@ class AnswerWorker(QThread):
     """
     Worker thread to generate answers without blocking the main UI.
     """
-    answer_ready = pyqtSignal(str)
+    answer_ready = Signal(str)
 
     def __init__(self, pipeline, question, parent=None):
         super().__init__(parent)

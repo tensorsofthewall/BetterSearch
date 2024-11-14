@@ -61,9 +61,33 @@ class LLMInterface:
             str: The device type ('cpu' or 'cuda') if the LLM is hosted locally, or None if the LLM is hosted remotely.
         """
         return self.llm_handler.get_device()
+    
+    def shutdown(self):
+        """
+        Shutdown the LLM model and tokenizer, freeing up memory.
+
+        Returns:
+            None
+        """
+
+        if hasattr(self.llm_handler, 'shutdown'):
+            self.llm_handler.shutdown()
 
 
 def clean_llm_output(llm_output: str = "", answer_preface: str = "", split_str: str = None):
+    """
+    Clean the output from the LLM by stripping leading and trailing whitespace and
+    optionally splitting the output using a specified string.
+
+    Args:
+        llm_output (str, optional): The output from the LLM. Defaults to "".
+        answer_preface (str, optional): The prefix to add to the cleaned output. Defaults to "".
+        split_str (str, optional): The string to split the output by. If not specified, the
+            entire output is returned. Defaults to None.
+
+    Returns:
+        List[str]: A list containing a single string which is the cleaned output.
+    """
     cleaned_output = llm_output.split(split_str)[-1].strip() if split_str else llm_output.strip()
     return [
         ''.join([
