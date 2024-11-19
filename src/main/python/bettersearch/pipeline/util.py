@@ -184,7 +184,7 @@ def get_table_info():
 # Get File Indexer    
 def get_file_indexer(**kwargs):
     if sys.platform == "win32":
-        from ..database import WindowsFileIndexer
+        from ..file_indexer import WindowsFileIndexer
         return WindowsFileIndexer(**kwargs)
     elif sys.platform == "linux" or sys.platform == "linux2":
         # For Linux DB

@@ -1,5 +1,4 @@
 from .base_service import BaseQueryService
-import asyncio
 import aiohttp
 
 

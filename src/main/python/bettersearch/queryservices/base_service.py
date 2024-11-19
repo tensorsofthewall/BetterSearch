@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from platformdirs import PlatformDirs
-from bettersearch import APP_NAME, VERSION
+from ...bettersearch import APP_NAME, VERSION
 
 class BaseQueryService(ABC):
     """
