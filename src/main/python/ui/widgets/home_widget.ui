@@ -97,7 +97,7 @@
          <enum>Qt::AutoText</enum>
         </property>
         <property name="pixmap">
-         <pixmap resource="../static/resource.qrc">:/imgs/images/logo.svg</pixmap>
+         <pixmap resource="static/resource.qrc">:/imgs/images/logo.svg</pixmap>
         </property>
         <property name="scaledContents">
          <bool>true</bool>
@@ -199,7 +199,7 @@
           <string>Examples</string>
          </property>
          <property name="icon">
-          <iconset resource="../static/resource.qrc">
+          <iconset resource="static/resource.qrc">
            <normaloff>:/icons/icons/venn-diagram-svgrepo-com.svg</normaloff>:/icons/icons/venn-diagram-svgrepo-com.svg</iconset>
          </property>
          <property name="iconSize">
@@ -344,7 +344,7 @@
           <string>Limitations</string>
          </property>
          <property name="icon">
-          <iconset resource="../static/resource.qrc">
+          <iconset resource="static/resource.qrc">
            <normaloff>:/icons/icons/perimeter-limit-svgrepo-com.svg</normaloff>:/icons/icons/perimeter-limit-svgrepo-com.svg</iconset>
          </property>
          <property name="iconSize">
@@ -480,7 +480,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../static/resource.qrc"/>
+  <include location="static/resource.qrc"/>
  </resources>
  <connections/>
 </ui>

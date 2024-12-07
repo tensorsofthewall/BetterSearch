@@ -165,7 +165,7 @@ chat_list::item {
              <string>New Chat</string>
             </property>
             <property name="icon">
-             <iconset resource="../static/resource.qrc">
+             <iconset resource="static/resource.qrc">
               <normaloff>:/icons/icons/new-indicator-svgrepo-com.svg</normaloff>:/icons/icons/new-indicator-svgrepo-com.svg</iconset>
             </property>
             <property name="iconSize">
@@ -188,7 +188,7 @@ chat_list::item {
              <string>Settings</string>
             </property>
             <property name="icon">
-             <iconset resource="../static/resource.qrc">
+             <iconset resource="static/resource.qrc">
               <normaloff>:/icons/icons/setting-5-svgrepo-com.svg</normaloff>:/icons/icons/setting-5-svgrepo-com.svg</iconset>
             </property>
             <property name="iconSize">
@@ -280,7 +280,7 @@ chat_list::item {
                 <string>  Clear Chats</string>
                </property>
                <property name="icon">
-                <iconset resource="../static/resource.qrc">
+                <iconset resource="static/resource.qrc">
                  <normaloff>:/icons/icons/trash3-fill.svg</normaloff>:/icons/icons/trash3-fill.svg</iconset>
                </property>
                <property name="iconSize">
@@ -327,7 +327,7 @@ chat_list::item {
                 <string>  Dark Mode</string>
                </property>
                <property name="icon">
-                <iconset resource="../static/resource.qrc">
+                <iconset resource="static/resource.qrc">
                  <normaloff>:/icons/icons/moon-stars.svg</normaloff>:/icons/icons/moon-stars.svg</iconset>
                </property>
                <property name="iconSize">
@@ -491,7 +491,7 @@ chat_list::item {
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../static/resource.qrc">
+             <iconset resource="static/resource.qrc">
               <normaloff>:/icons/icons/send-svgrepo-com.svg</normaloff>:/icons/icons/send-svgrepo-com.svg</iconset>
             </property>
             <property name="iconSize">
@@ -576,7 +576,7 @@ chat_list::item {
   </widget>
  </widget>
  <resources>
-  <include location="../static/resource.qrc"/>
+  <include location="static/resource.qrc"/>
  </resources>
  <connections/>
 </ui>

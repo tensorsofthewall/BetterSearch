@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>993</width>
+    <width>846</width>
     <height>123</height>
    </rect>
   </property>
@@ -43,6 +43,32 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="3">
+       <widget class="QLabel" name="textlabel">
+        <property name="minimumSize">
+         <size>
+          <width>700</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Text</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
       <item row="0" column="2">
        <widget class="QFrame" name="frame_2">
         <property name="frameShape">
@@ -67,7 +93,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="../static/resource.qrc">:/icons/icons/user-circle-svgrepo-com.svg</pixmap>
+            <pixmap resource="static/resource.qrc">:/icons/icons/user-circle-svgrepo-com.svg</pixmap>
            </property>
            <property name="scaledContents">
             <bool>true</bool>
@@ -91,19 +117,6 @@
           </spacer>
          </item>
         </layout>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QLabel" name="textlabel">
-        <property name="minimumSize">
-         <size>
-          <width>700</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Text</string>
-        </property>
        </widget>
       </item>
       <item row="0" column="4">
@@ -150,7 +163,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../static/resource.qrc">
+            <iconset resource="static/resource.qrc">
              <normaloff>:/icons/icons/edit-3-svgrepo-com.svg</normaloff>:/icons/icons/edit-3-svgrepo-com.svg</iconset>
            </property>
            <property name="iconSize">
@@ -161,24 +174,11 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="3">
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
         </layout>
        </widget>
       </item>
-      <item row="0" column="1">
-       <spacer name="horizontalSpacer">
+      <item row="0" column="5">
+       <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -196,7 +196,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../static/resource.qrc"/>
+  <include location="static/resource.qrc"/>
  </resources>
  <connections/>
 </ui>

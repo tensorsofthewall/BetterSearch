@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout,
     QLabel, QLayout, QSizePolicy, QSpacerItem,
     QToolButton, QVBoxLayout, QWidget)
-import resource_rc
+from .static import resource_rc
 
 class Ui_home_widget(object):
     def setupUi(self, home_widget):

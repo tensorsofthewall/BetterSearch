@@ -18,13 +18,13 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QLabel,
     QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
     QWidget)
-import resource_rc
+from .static import resource_rc
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(993, 123)
+        Form.resize(846, 123)
         Form.setStyleSheet(u"#Form {\n"
 "	background: #fff;\n"
 "}")
@@ -38,6 +38,16 @@ class Ui_Form(object):
         self.input_frame.setFrameShadow(QFrame.Raised)
         self.gridLayout_2 = QGridLayout(self.input_frame)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.textlabel = QLabel(self.input_frame)
+        self.textlabel.setObjectName(u"textlabel")
+        self.textlabel.setMinimumSize(QSize(700, 0))
+
+        self.gridLayout_2.addWidget(self.textlabel, 0, 3, 1, 1)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout_2.addItem(self.horizontalSpacer, 0, 1, 1, 1)
+
         self.frame_2 = QFrame(self.input_frame)
         self.frame_2.setObjectName(u"frame_2")
         self.frame_2.setFrameShape(QFrame.StyledPanel)
@@ -60,12 +70,6 @@ class Ui_Form(object):
 
 
         self.gridLayout_2.addWidget(self.frame_2, 0, 2, 1, 1)
-
-        self.textlabel = QLabel(self.input_frame)
-        self.textlabel.setObjectName(u"textlabel")
-        self.textlabel.setMinimumSize(QSize(700, 0))
-
-        self.gridLayout_2.addWidget(self.textlabel, 0, 3, 1, 1)
 
         self.frame_3 = QFrame(self.input_frame)
         self.frame_3.setObjectName(u"frame_3")
@@ -91,16 +95,12 @@ class Ui_Form(object):
 
         self.gridLayout.addWidget(self.edit_btn, 0, 0, 1, 1)
 
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer_3, 1, 3, 1, 1)
-
 
         self.gridLayout_2.addWidget(self.frame_3, 0, 4, 1, 1)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout_2.addItem(self.horizontalSpacer, 0, 1, 1, 1)
+        self.gridLayout_2.addItem(self.horizontalSpacer_3, 0, 5, 1, 1)
 
 
         self.gridLayout_3.addWidget(self.input_frame, 0, 0, 1, 1)
@@ -113,8 +113,8 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.input_icon.setText("")
         self.textlabel.setText(QCoreApplication.translate("Form", u"Text", None))
+        self.input_icon.setText("")
         self.edit_btn.setText("")
     # retranslateUi
 

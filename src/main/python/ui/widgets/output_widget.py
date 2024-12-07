@@ -18,13 +18,13 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QLabel,
     QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
     QWidget)
-import resource_rc
+from .static import resource_rc
 
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(995, 121)
+        Form.resize(854, 121)
         Form.setStyleSheet(u"#Form {\n"
 "	background: #fff;\n"
 "}")
@@ -38,35 +38,6 @@ class Ui_Form(object):
         self.output_frame.setFrameShadow(QFrame.Raised)
         self.gridLayout_2 = QGridLayout(self.output_frame)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.frame_2 = QFrame(self.output_frame)
-        self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setFrameShape(QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_2 = QVBoxLayout(self.frame_2)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.output_icon = QLabel(self.frame_2)
-        self.output_icon.setObjectName(u"output_icon")
-        self.output_icon.setMaximumSize(QSize(32, 32))
-        self.output_icon.setFrameShape(QFrame.NoFrame)
-        self.output_icon.setPixmap(QPixmap(u":/imgs/images/logo.svg"))
-        self.output_icon.setScaledContents(True)
-        self.output_icon.setAlignment(Qt.AlignCenter)
-
-        self.verticalLayout_2.addWidget(self.output_icon)
-
-        self.verticalSpacer = QSpacerItem(20, 24, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_2.addItem(self.verticalSpacer)
-
-
-        self.gridLayout_2.addWidget(self.frame_2, 0, 2, 1, 1)
-
-        self.textlabel = QLabel(self.output_frame)
-        self.textlabel.setObjectName(u"textlabel")
-        self.textlabel.setMinimumSize(QSize(700, 0))
-
-        self.gridLayout_2.addWidget(self.textlabel, 0, 3, 1, 1)
-
         self.frame_3 = QFrame(self.output_frame)
         self.frame_3.setObjectName(u"frame_3")
         self.frame_3.setFrameShape(QFrame.StyledPanel)
@@ -91,16 +62,45 @@ class Ui_Form(object):
 
         self.gridLayout.addItem(self.horizontalSpacer_2, 1, 1, 1, 1)
 
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer_3, 1, 2, 1, 1)
-
 
         self.gridLayout_2.addWidget(self.frame_3, 0, 4, 1, 1)
+
+        self.textlabel = QLabel(self.output_frame)
+        self.textlabel.setObjectName(u"textlabel")
+        self.textlabel.setMinimumSize(QSize(700, 0))
+
+        self.gridLayout_2.addWidget(self.textlabel, 0, 3, 1, 1)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_2.addItem(self.horizontalSpacer, 0, 1, 1, 1)
+
+        self.frame_2 = QFrame(self.output_frame)
+        self.frame_2.setObjectName(u"frame_2")
+        self.frame_2.setFrameShape(QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_2 = QVBoxLayout(self.frame_2)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.output_icon = QLabel(self.frame_2)
+        self.output_icon.setObjectName(u"output_icon")
+        self.output_icon.setMaximumSize(QSize(44, 44))
+        self.output_icon.setFrameShape(QFrame.NoFrame)
+        self.output_icon.setPixmap(QPixmap(u":/imgs/images/logo.svg"))
+        self.output_icon.setScaledContents(True)
+        self.output_icon.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_2.addWidget(self.output_icon)
+
+        self.verticalSpacer = QSpacerItem(20, 24, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer)
+
+
+        self.gridLayout_2.addWidget(self.frame_2, 0, 2, 1, 1)
+
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout_2.addItem(self.horizontalSpacer_3, 0, 5, 1, 1)
 
 
         self.gridLayout_3.addWidget(self.output_frame, 0, 0, 1, 1)
@@ -113,8 +113,8 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.output_icon.setText("")
-        self.textlabel.setText(QCoreApplication.translate("Form", u"Text", None))
         self.redo_btn.setText("")
+        self.textlabel.setText(QCoreApplication.translate("Form", u"Text", None))
+        self.output_icon.setText("")
     # retranslateUi
 
