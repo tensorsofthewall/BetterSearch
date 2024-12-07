@@ -1,0 +1,17 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/redo-svgrepo-com.svg</file>
+    <file>icons/edit-3-svgrepo-com.svg</file>
+    <file>icons/user-circle-svgrepo-com.svg</file>
+    <file>icons/perimeter-limit-svgrepo-com.svg</file>
+    <file>icons/venn-diagram-svgrepo-com.svg</file>
+    <file>icons/new-indicator-svgrepo-com.svg</file>
+    <file>icons/send-svgrepo-com.svg</file>
+    <file>icons/setting-5-svgrepo-com.svg</file>
+    <file>icons/trash3-fill.svg</file>
+    <file>icons/moon-stars.svg</file>
+  </qresource>
+  <qresource prefix="imgs">
+    <file>images/logo.svg</file>
+  </qresource>
+</RCC>
