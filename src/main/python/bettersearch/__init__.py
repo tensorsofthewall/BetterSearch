@@ -1,11 +1,11 @@
-from .file_indexer  import WindowsFileIndexer, LinuxFileIndexer
-from .pipeline import BetterSearchPipeline
+# from .file_indexer  import WindowsFileIndexer, LinuxFileIndexer
+# from .pipeline import BetterSearchPipeline
 
 
-APP_NAME="BetterSearch"
-VERSION="0.1.0"
+__app_name__="BetterSearch"
+__version__="0.1.0"
 
-__SUPPORTED_MODELS__ = [
+__supported_models__ = [
     "sandeshb/llama-3-sqlcoder-8b-int8-ov",
     "defog/llama-3-sqlcoder-8b"
 ]

@@ -1,10 +1,10 @@
 # System libraries
-import pathlib
 import logging
 import json
 from operator import itemgetter
 from collections import defaultdict
 from itertools import chain
+from pathlib import Path
 
 # Installed libraries
 from ffmpeg import FFmpeg
@@ -12,9 +12,21 @@ from PIL import Image, ExifTags
 import pymupdf4llm
 import pymupdf as fitz
 
+# Docling imports
+from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+
 # Others
 from .constants import parsable_exts
 from .util import convert_gps_info_to_lat_lon_alt, get_all_exts
+
+from langchain_text_splitters import MarkdownTextSplitter, RecursiveCharacterTextSplitter
+
+
+from semantic_text_splitter import MarkdownSplitter
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,22 +42,22 @@ def parse_file_contents(file_path: str):
         str or dict: Parsed content of the file, or None if the file is not supported.
     """
     try:
-        ext = pathlib.Path(file_path).suffix
-        if pathlib.Path(file_path).suffix not in get_all_exts(parsable_exts):
+        ext = Path(file_path).suffix
+        if Path(file_path).suffix not in get_all_exts(parsable_exts):
             return None
         else:
             if ext in parsable_exts.get('mupdf'):
-                return _parse_pdf(file_path)
+                return __parse_pdf(file_path)
             elif ext in chain(parsable_exts.get('ffmpeg_audio'), parsable_exts.get('ffmpeg_image'), parsable_exts.get('ffmpeg_video')):
-                return _parse_ffmpeg(file_path, ext)
+                return __parse_ffmpeg(file_path, ext)
             elif ext in parsable_exts.get('text'):
-                return _parse_txt(file_path)
+                return __parse_txt(file_path)
             else:
                 logger.error(f"The given file is not supported for parsing. Try again: {file_path}")
     except:
         pass
 
-def _parse_txt(file_path):
+def __parse_txt(file_path):
     """
     Parse the contents of a text file.
 
@@ -59,7 +71,7 @@ def _parse_txt(file_path):
         content = file.read()
     return content
 
-def _parse_ffmpeg(file_path, ext):
+def __parse_ffmpeg(file_path, ext):
     """
     Parse the contents of a media file (audio, video, or image) using ffmpeg.
 
@@ -107,7 +119,7 @@ def _parse_ffmpeg(file_path, ext):
         
     return parsed
 
-def _parse_pdf(file_path):
+def __parse_pdf(file_path):
     """
     Parse the contents of a PDF file using pymupdf4llm.
 
@@ -125,3 +137,44 @@ def _parse_pdf(file_path):
         # TODO: Handle parsing of password protected documents
         pass
     
+
+def create_docs_for_db(chunk_size=1000, chunk_overlap=200, file_path=None, date_modified=None):
+        ext = Path(file_path).suffix
+        # docling parsing of content, more accurate. This may replace custom parsing below.
+        if ext in parsable_exts.get('docling'):
+            pipeline_options = PdfPipelineOptions()
+            pipeline_options.do_ocr = True
+            pipeline_options.do_table_structure = True
+            pipeline_options.table_structure_options.do_cell_matching = True
+            
+            converter = DocumentConverter(
+                format_options={
+                    InputFormat.PDF: PdfFormatOption(
+                        pipeline_options=pipeline_options
+                    )
+                }
+            )
+            content = converter.convert(file_path).document.export_to_markdown()
+            # return content
+            
+            docs = MarkdownSplitter(capacity=(chunk_size,chunk_size+128), overlap=chunk_overlap, trim=True).chunks(content)
+            metadatas = [{"path": f"{file_path}", "fileext": f"{ext}", "date_modified": str(date_modified)} for _ in range(len(docs))]
+            ids = [f"{file_path}_{i+1}" for i in range(len(docs))]
+            
+            return {"documents": docs, "metadatas": metadatas, "ids": ids}, len(docs)
+        else:
+            # Content parsed by custom parsing with PyMUPDF and other libraries
+            content = parse_file_contents(file_path)
+            
+            if isinstance(content, str):
+                if ext in parsable_exts.get("mupdf"):
+                    splitter = MarkdownTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+                elif ext in parsable_exts.get("text"):
+                    splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+                
+                docs = [doc.page_content for doc in splitter.create_documents([content])]
+                metadatas = [{"path": f"{file_path}", "fileext": f"{ext}", "date_modified": str(date_modified)} for _ in range(len(docs))]
+                ids = [f"{file_path}_{i+1}" for i in range(len(docs))]
+                return {"documents": docs, "metadatas": metadatas, "ids": ids}, len(docs)
+            else:
+                return None, None

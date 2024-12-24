@@ -2,4 +2,4 @@
 from .db_interface import DBInterface
 
 # Import all DB handlers here
-from .chromadb_interface import ChromaDBHandler
+# from .chromadb_interface import ChromaDBHandler

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 
 
 class BaseLLMHandler(ABC):
@@ -16,7 +16,7 @@ class BaseLLMHandler(ABC):
         get_device(): Get the device for the LLM.
     """
     @abstractmethod
-    def generate(self, prompts: List[str] | str, **kwargs):
+    def generate(self, prompts: Union[List[str], str], **kwargs):
         """
         Generate text based on the given prompts.
 

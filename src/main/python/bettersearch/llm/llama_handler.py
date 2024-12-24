@@ -1,10 +1,11 @@
 from .base_handler import BaseLLMHandler
 from transformers import BitsAndBytesConfig
 from pathlib import Path
-from ..pipeline.util import get_local_model_and_tokenizer
+from bettersearch.pipeline.util import get_local_model_and_tokenizer
 import torch
 
-from typing import List
+from typing import List, Union
+from threading import Lock
 
 
 class LlamaHandler(BaseLLMHandler):
@@ -25,7 +26,7 @@ class LlamaHandler(BaseLLMHandler):
         get_device(): Get the device type where the LLM is hosted.
         shutdown(): Shutdown the LLM model and tokenizer, freeing up memory.
     """
-    def __init__(self, model_name: str = None, cache_dir: str | Path = None, bnb_config: BitsAndBytesConfig = None, kv_cache_flag: bool = True, **kwargs):
+    def __init__(self, model_name: str = None, cache_dir: Union[str, Path] = None, bnb_config: BitsAndBytesConfig = None, kv_cache_flag: bool = True, **kwargs):
         """
         Initialize the LlamaHandler with the given parameters.
 
@@ -47,6 +48,8 @@ class LlamaHandler(BaseLLMHandler):
         )
         self.num_beams = kwargs.get('num_beams', 4)
         
+        self.lock = Lock()
+        
     def get_tokenizer(self):
         """
         Get the tokenizer for the LLM.
@@ -66,7 +69,7 @@ class LlamaHandler(BaseLLMHandler):
         """
         return self.model.device
     
-    def generate(self, prompts: List[str] | str, **kwargs):
+    def generate(self, prompts: Union[List[str], str], **kwargs):
         """
         Generate text based on the given prompts.
 
@@ -82,18 +85,19 @@ class LlamaHandler(BaseLLMHandler):
             self.model.generate(
                 **self.tokenizer(
                     prompts, return_tensors="pt"
-                ).to(self.get_device),
+                ).to(self.get_device()),
                 num_return_sequences=1,
                 eos_token_id=self.tokenizer.eos_token_id,
                 pad_token_id=self.tokenizer.eos_token_id,
-                max_new_tokens=400,
-                num_beams=self.num_beams,
-                do_sample=kwargs.get('do_sample', False),
-                temperature=kwargs.get('temperature', None),
-                top_p=kwargs.get('top_p', None),
+                # num_beams=self.num_beams,
+                **kwargs,
+                # max_new_tokens=kwargs.get('max_new_tokens', 512),
+                # do_sample=kwargs.get('do_sample', False),
+                # temperature=kwargs.get('temperature', None),
+                # top_p=kwargs.get('top_p', None),
             ),
             skip_special_tokens=True
-        )
+            )
 
     def shutdown(self):
         """
