@@ -12,7 +12,7 @@ class FleetQueryService(BaseQueryService):
     See Also:
         https://fleetdm.com/docs/ for more information on FleetDM.
     """
-    def __init__(self, url, api_key, **kwargs):
+    def __init__(self, **kwargs):
         """
         Initialize query service for FleetDM (local, cloud, multi device management).
         Args:
@@ -21,8 +21,8 @@ class FleetQueryService(BaseQueryService):
             **kwargs: Additional keyword arguments
         """
         super().__init__()
-        self.url = url
-        self.api_key = api_key
+        self.url = kwargs.get("url", None)
+        self.api_key = kwargs.get("api_key", None)
 
     async def run_query(self, query, **kwargs):
         """

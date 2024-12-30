@@ -1,0 +1,58 @@
+{
+    "table_names": {
+        "common": [
+            "cpu_info",
+            "file",
+            "system_info",
+            "users",
+            "logged_in_users",
+            "time",
+            "uptime",
+            "os_version"
+        ],
+        
+        "windows": [
+            "windows_search",
+            "windows_security_center",
+            "windows_update_history"
+        ],
+        
+        "darwin": [
+            "apps",
+            "mdfind",
+            "homebrew_packages",
+            "mdls"
+        ],
+        
+        "linux": [
+        ]
+    },
+    "table_joins": {
+        "common": [
+            ["users.username","logged_in_users.user"],
+            ["cpu_info.model", "system_info.cpu_brand"],
+            ["cpu_info.number_of_cores", "system_info.cpu_physical_cores"],
+            ["cpu_info.logical_processors", "system_info.cpu_logical_cores"]
+        ],
+        "windows": [
+            ["file.path", "windows_search.path"],
+            ["file.size", "windows_search.size"],
+            ["file.ctime", "windows_search.date_created"],
+            ["file.mtime", "windows_search.date_modified"],
+            ["file.type", "windows_search.type"]
+        ],
+        "darwin": [
+            ["file.path", "mdfind.path"],
+            ["file.path", "apps.path"],
+            ["file.path","mdls.path"],
+            ["apps.path", "mdfind.path"],
+            ["mdfind.path", "mdls.path"],
+            ["apps.path","mdls.path"],
+            ["apps.path","homebrew_packages.path"],
+            ["apps.name","homebrew_packages.name"]
+        ],
+        "linux": [
+
+        ]
+    }
+}

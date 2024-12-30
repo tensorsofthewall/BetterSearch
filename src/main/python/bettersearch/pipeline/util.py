@@ -1,11 +1,14 @@
+from pathlib import Path
 import os, re, sys, platform
 import shutil
 from collections import defaultdict
-import sqlparse
-from sqlparse.tokens import Keyword
-from sqlparse.sql import Identifier, IdentifierList
+# import sqlparse
+# from sqlparse.tokens import Keyword
+# from sqlparse.sql import Identifier, IdentifierList
 import psutil
+import json
 from typing import Union
+import requests
 
 # Clean the output of Llama-SQLCoder by formatting and removing aliases.
 def clean_sqlcoder_output(sql_query, table_info, table_name):
@@ -164,10 +167,21 @@ def get_local_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_fl
     return model, tokenizer
 
 # Separate method for getting prompt
-def get_prompt_format(file):
-    with open(file, "r") as f:
-        prompt = f.read()
-    return prompt
+def get_prompt_format(folder_name: str, promptFormatDir: str | None = None):
+    promptFormats = ["generalPromptFormat", "sqlPromptFormat"]
+    if not promptFormatDir:
+        promptFormatDir = Path(__file__).parent / f"{folder_name}"
+        
+    
+    promptFormatDict = defaultdict(lambda: None)
+    
+    for promptFormat in promptFormats:
+        file = promptFormatDir / f"{promptFormat}.md"
+        if file.exists():
+            with open(file, "r") as f:
+                promptFormatDict[promptFormat] = f.read()
+    
+    return promptFormatDict
 
 # Get SQL/OLEDB Table Metadata and Name
 def get_table_info():
@@ -282,3 +296,50 @@ def is_osquery_installed(custom_install_path: Union[os.PathLike,str,bytes,int] =
             return True
     
     return False
+
+def get_compat_osquery_schemas(file: Union[Path,str,None] = None,version: str = "5.14.1", is_cross_platform: bool = False):
+    if Path(file).exists():
+        with open(file) as f:
+            json_response = json.load(f)
+    else:
+        url = f"https://raw.githubusercontent.com/osquery/osquery-site/source/src/data/osquery_schema_versions/{version}.json"
+        print("Fetching from url")
+        json_response = requests.get(url).json()
+        with open(file, 'w') as f:
+            json.dump(json_response, f, indent=4)
+    
+    if is_cross_platform:
+        return [x for x in json_response if all(p in x.get('platforms') for p in ['windows','darwin','linux'])]
+    
+    return [x for x in json_response if platform.system().lower() in x.get('platforms')]
+
+def get_compat_table_info(schema_file: Union[Path,str,None] = None, osquery_verison: str="5.14.1", is_cross_platform: bool = False,**kwargs):
+    schema = get_compat_osquery_schemas(schema_file, osquery_verison, is_cross_platform)
+    formatted_data = {}
+    for table in schema:
+        formatted_data.update({
+            table['name']: {
+                'description': table['description'],
+                'columns': [
+                    {
+                        'name': column['name'],
+                        'type': column['type'],
+                        'description': column['description'],
+                    }
+                    for column in table['columns']
+                ]
+            }
+        })
+    
+    return formatted_data
+
+def get_platform_table_names(table_info_file: Union[Path,str], **kwargs):
+    platforms = ['windows', 'darwin', 'linux']
+    platforms.remove(platform.system().lower())
+    
+    with open(table_info_file) as f:
+        table_info = json.load(f)
+        table_names, table_joins = table_info.values()
+        for pf in platforms:
+            del table_names[pf], table_joins[pf]
+    return table_names, table_joins

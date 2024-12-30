@@ -1,7 +1,7 @@
 from .base_handler import BaseLLMHandler
 from transformers import BitsAndBytesConfig
 from pathlib import Path
-from bettersearch.pipeline.util import get_local_model_and_tokenizer
+from ..pipeline.util import get_local_model_and_tokenizer
 import torch
 
 from typing import List, Union
@@ -26,12 +26,12 @@ class LlamaHandler(BaseLLMHandler):
         get_device(): Get the device type where the LLM is hosted.
         shutdown(): Shutdown the LLM model and tokenizer, freeing up memory.
     """
-    def __init__(self, model_name: str = None, cache_dir: Union[str, Path] = None, bnb_config: BitsAndBytesConfig = None, kv_cache_flag: bool = True, **kwargs):
+    def __init__(self, name: str = None, cache_dir: Union[str, Path] = None, bnb_config: BitsAndBytesConfig = None, kv_cache_flag: bool = True, **kwargs):
         """
         Initialize the LlamaHandler with the given parameters.
 
         Args:
-            model_name (str): Name of the model to be used.
+            name (str): Name of the model to be used.
             cache_dir (str | Path): Directory to cache the model.
             bnb_config (BitsAndBytesConfig): Configuration for bits and bytes.
             kv_cache_flag (bool): Flag to enable or disable key-value caching.
@@ -40,7 +40,7 @@ class LlamaHandler(BaseLLMHandler):
 
         super().__init__()
         self.model, self.tokenizer = get_local_model_and_tokenizer(
-            model_name,
+            name,
             cache_dir,
             bnb_config,
             kv_cache_flag,
@@ -80,23 +80,41 @@ class LlamaHandler(BaseLLMHandler):
         Returns:
             Generated text.
         """
-        
-        return self.tokenizer.batch_decode(
-            self.model.generate(
-                **self.tokenizer(
-                    prompts, return_tensors="pt"
-                ).to(self.get_device()),
-                num_return_sequences=1,
-                eos_token_id=self.tokenizer.eos_token_id,
-                pad_token_id=self.tokenizer.eos_token_id,
-                # num_beams=self.num_beams,
-                **kwargs,
-                # max_new_tokens=kwargs.get('max_new_tokens', 512),
-                # do_sample=kwargs.get('do_sample', False),
-                # temperature=kwargs.get('temperature', None),
-                # top_p=kwargs.get('top_p', None),
-            ),
-            skip_special_tokens=True
+        if isinstance(prompts, str):
+            return self.tokenizer.batch_decode(
+                self.model.generate(
+                    **self.tokenizer(
+                        prompts, return_tensors="pt"
+                    ).to(self.get_device()),
+                    num_return_sequences=1,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    # num_beams=self.num_beams,
+                    **kwargs,
+                    # max_new_tokens=kwargs.get('max_new_tokens', 512),
+                    # do_sample=kwargs.get('do_sample', False),
+                    # temperature=kwargs.get('temperature', None),
+                    # top_p=kwargs.get('top_p', None),
+                ),
+                skip_special_tokens=True
+            )[0]
+        elif isinstance(prompts, list):
+            return self.tokenizer.batch_decode(
+                self.model.generate(
+                    **self.tokenizer(
+                        prompts, return_tensors="pt"
+                    ).to(self.get_device()),
+                    num_return_sequences=1,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    num_beams=self.num_beams,
+                    **kwargs,
+                    # max_new_tokens=kwargs.get('max_new_tokens', 512),
+                    # do_sample=kwargs.get('do_sample', False),
+                    # temperature=kwargs.get('temperature', None),
+                    # top_p=kwargs.get('top_p', None),
+                ),
+                skip_special_tokens=True
             )
 
     def shutdown(self):

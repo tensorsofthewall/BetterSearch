@@ -1,8 +1,9 @@
-import os, re
+import os, re, requests
 import platform
 from collections import defaultdict
 from .constants import parsable_exts, WIN_SYSINDEX_TO_COLS
 from pathlib import Path
+from typing import List
 
 def convert_gps_info_to_lat_lon_alt(gpsInfo):
     def convert_to_degrees(value):
@@ -61,9 +62,8 @@ def is_sql_query(query):
     """
     
     sql_keywords = [
-        'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'FROM', 'WHERE', 'JOIN', 'LEFT', 'RIGHT', 'INNER',
-        'OUTER', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET', 'CREATE', 'ALTER', 'DROP', 'TABLE',
-        'DATABASE', 'VIEW', 'INDEX', 'VALUES', 'SET', 'AND', 'OR', 'NOT', 'BETWEEN', 'LIKE', 'IN', 'AS', 'DISTINCT'
+        'SELECT', 'FROM', 'WHERE', 'JOIN', 'LEFT', 'RIGHT', 'INNER',
+        'OUTER', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET','TABLE', 'AND', 'OR', 'NOT', 'BETWEEN', 'LIKE', 'IN', 'AS','DISTINCT'
     ]
     
     query_upper = query.upper()
@@ -72,13 +72,14 @@ def is_sql_query(query):
         if keyword in query_upper:
             return True
     
-    # Regex Checking of SQL-like syntax
-    
+    # Regex Checking of SQL-like syntax for osquery
     sql_patterns = [
         r'\bSELECT\b.*\bFROM\b',
-        r'\bINSERT\b.*\bINTO\b',
-        r'\bUPDATE\b.*\bSET\b',
-        r'\bDELETE\b.*\bFROM\b'
+        r'^SELECT\s+.+\s+FROM\s+\w+(\s+WHERE\s+.+)?(\s+(ORDER BY|GROUP BY)\s+\w+(\s+(ASC\|DESC))?)?(\s+LIMIT\s+\d+)?;?$',
+        r'^SELECT\s+(\*\|[\w, ]+)\s+FROM\s+\w+',
+        r'WHERE\s+\w+\s+(=\|LIKE\|IN\|BETWEEN\|>\|<\|>=\|<=)\s+(\'.+\'\|\d+\|\(.+\))',
+        r'JOIN\s+\w+\s+(ON\|USING)\s+\(.+\)',
+        r'regex_match\(\w+,\s*\'.*\',\s*\d+\)',
     ]
     
     for pattern in sql_patterns:
@@ -117,3 +118,14 @@ def format_sqlrows_to_dict(rows, description):
 
 def flatten(query_list):
     return [subitem for item in query_list for subitem in item]
+
+
+
+def get_compat_osquery_schemas(version: str = "5.14.1", is_cross_platform: bool = False):
+    url = f"https://raw.githubusercontent.com/osquery/osquery-site/source/src/data/osquery_schema_versions/{version}.json"
+    json_response = requests.get(url).json()
+    
+    if is_cross_platform:
+        return [x for x in json_response if all(p in x.get('platforms') for p in ['windows','darwin','linux'])]
+    
+    return [x for x in json_response if platform.system().lower() in x.get('platforms')]

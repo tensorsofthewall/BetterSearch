@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from platformdirs import PlatformDirs
-from ...bettersearch import APP_NAME, VERSION
+from ...bettersearch import __appname__, __version__
 
 class BaseQueryService(ABC):
     """
@@ -19,7 +18,7 @@ class BaseQueryService(ABC):
         stop(): Shutdown the service.
     """
     @abstractmethod
-    def __init__(self, **kwargs):
+    def __init__(self):
         """
         Initialize the service.
 
@@ -28,7 +27,20 @@ class BaseQueryService(ABC):
         Args:
             **kwargs: Additional keyword arguments
         """
-        self.platformdirs = PlatformDirs(APP_NAME, version=VERSION)
+        pass
+    
+    @abstractmethod
+    def _get_current_state(self, **kwargs):
+        """
+        Get the current state of the service.
+
+        This method is intended to be overridden by subclasses of BaseQueryService.
+
+        Args:
+            **kwargs: Additional keyword arguments
+        """
+        pass
+    
     @abstractmethod
     def run_query(self, query, **kwargs):
         """

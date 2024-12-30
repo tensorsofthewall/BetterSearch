@@ -1,0 +1,21 @@
+{
+    "content_tables": [
+        "file",
+        "windows_search",
+        "mdfind",
+        "apps",
+        "homebrew_packages",
+        "mdls"
+    ],
+    "system_tables": [
+        "cpu_info",
+        "system_info",
+        "users",
+        "logged_in_users",
+        "time",
+        "uptime",
+        "os_version",
+        "windows_security_center",
+        "windows_update_history"
+    ]
+}

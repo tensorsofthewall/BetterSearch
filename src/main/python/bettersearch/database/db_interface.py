@@ -1,55 +1,48 @@
-from typing import List, Dict
-from .base_db_handler import BaseDBHandler  # Import the abstract base interface
+from typing import List, DefaultDict, Any
+from .chromadb_handler import ChromaDBHandler
 
 class DBInterface:
-    def __init__(self, db_instance: BaseDBHandler):
+    def __init__(self, **kwargs):
         """
         Initialize with a specific vector database instance.
         
         Args:
             db_instance (BaseDBHandler): An instance of a class that implements BaseDBHandler.
         """
-        self.db_instance = db_instance
-
-    def add_to_collection(self, file_path: str, date_modified: str):
+        self.db_instance = self._create_db_handler(**kwargs)
+        
+    def _create_db_handler(self, **kwargs):
+        db_type = kwargs.get("type", "")
+        if db_type == "chroma":
+            return ChromaDBHandler(**kwargs)
+        elif not db_type:
+            raise ValueError(f"Database type not specified. Please specify a valid database type.")
+        else:
+            raise ValueError(f"Unsupported database type: {db_type}")
+    
+    def get_collection_metadata(self):
         """
-        Add a file to the vector database collection.
-
-        Args:
-            file_path (str): Path to the file.
-            date_modified (str): Date the file was last modified.
+        Get file metadata from the vector database collection.
         """
-        self.db_instance.add_to_collection(file_path=file_path, date_modified=date_modified)
+        return self.db_instance.get_all_metadata()
 
-    def update_to_collection(self, file_path: str, date_modified: str):
-        """
-        Update a file in the vector database collection.
-
-        Args:
-            file_path (str): Path to the file.
-            date_modified (str): Date the file was last modified.
-        """
-        self.db_instance.update_to_collection(file_path=file_path, date_modified=date_modified)
-
-    def delete_from_collection(self, file_path: str):
-        """
-        Delete a file from the vector database collection.
-
-        Args:
-            file_path (str): Path to the file.
-        """
-        self.db_instance.delete_from_collection(file_path=file_path)
-
-    def update_collection(self, change_list: List[Dict]):
+    def update_collection(self, change_list: DefaultDict[Any, List]):
         """
         Update the vector database collection based on a list of changes.
 
         Args:
             change_list (list): List of changes detected.
         """
-        self.db_instance.update_collection(change_list)
+        # self.db_instance.update_collection(change_list)
+        for change_type, values in change_list.items():
+            if change_type == "Deleted":
+                self.db_instance._delete_from_collection(file_paths=values)
+            elif change_type =="Added":
+                self.db_instance._add_to_collection(values)
+            elif change_type == "Modified":
+                self.db_instance._update_to_collection(values)
 
-    def query_collection(self, query: str) -> List[str]:
+    def query_collection(self, query: str, **kwargs) -> List[str]:
         """
         Query the vector database collection.
 
@@ -59,4 +52,4 @@ class DBInterface:
         Returns:
             list: Query results.
         """
-        return self.db_instance.query_collection(query)
+        return self.db_instance.query_collection(query, **kwargs)

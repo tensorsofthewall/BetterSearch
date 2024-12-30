@@ -5,7 +5,7 @@
 # Types of files to parse
 parsable_exts = {
     'mupdf': [
-        '.pdf','.xps','.fb2','.epub',
+        '.xps','.fb2','.epub',
         '.mobi', '.cbz',
     ],
     'ffmpeg_audio': [
@@ -71,6 +71,12 @@ parsable_exts = {
         ".etx",".sgml",".sh",".spc",
         ".tcl",".tex",".uil",".uu",
         ".vcs",".vcf"    
+    ],
+    'docling': [
+       ".docx",".dotx",".docm",".dotm",
+       ".pptx",".potx",".ppsx",".pptm",
+       ".potm",".ppsm",".pdf",".md",
+       ".adoc",".asciidoc",".asc",".xlsx"
     ]
 }
 

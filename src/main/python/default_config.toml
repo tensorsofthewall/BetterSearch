@@ -1,0 +1,52 @@
+# Default configuration for BetterSearch
+
+# General configuration params
+cache_dir = "D:\\projects\\BetterSearch\\cache_dir"
+schema_file = "D:\\projects\\Bettersearch\\src\\main\\python\\bettersearch\\pipeline\\table_schema.json"
+table_info_file = "D:\\projects\\Bettersearch\\src\\main\\python\\bettersearch\\pipeline\\table_info.json"
+
+# Model Configuration
+[model_config]
+type="Local"
+name="defog/llama-3-sqlcoder-8b"
+# "tensorsofthewall/llama-3-sqlcoder-8b-int8-ov"
+
+kv_cache_flag=true
+num_beams=4
+answer_preface=""
+promptFormatDir=""
+
+# BitsAndBytes Configuration
+[model_config.bnb_config]
+load_in_4bit=true
+bnb_4bit_use_double_quant=true
+bnb_4bit_quant_type="nf4"
+bnb_4bit_compute_dtype="bfloat16"
+
+# Database Interface Configuration
+[db_config]
+type="chroma"
+vector_db_path = "D:\\projects\\BetterSearch\\new_content_db"
+embedding_model_name = "Alibaba-NLP/gte-base-en-v1.5"
+chunk_batch_size=500
+chunk_overlap=100
+chunk_size=1000
+
+top_k=5
+device="cpu" # cuda
+
+# Service Controller Configuration
+[svc_config]
+type="osquery"
+# path = CUSTOM_DIR
+
+# File Search Configuration
+[fs_config]
+file_cols=["size"]
+folders=["C:\\Users\\san_2\\Downloads", "C:\\Users\\san_2\\Desktop"]
+order_col="date_modified"
+max_results=20
+
+# Indexer configuration
+[indexer_config]
+check_interval=30 # seconds between search index updates

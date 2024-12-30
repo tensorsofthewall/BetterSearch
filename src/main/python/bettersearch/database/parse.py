@@ -7,10 +7,10 @@ from itertools import chain
 from pathlib import Path
 
 # Installed libraries
-from ffmpeg import FFmpeg
+# from ffmpeg import FFmpeg
 from PIL import Image, ExifTags
-import pymupdf4llm
-import pymupdf as fitz
+# import pymupdf4llm
+# import pymupdf as fitz
 
 # Docling imports
 from docling.document_converter import DocumentConverter, PdfFormatOption
@@ -21,7 +21,7 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 from .constants import parsable_exts
 from .util import convert_gps_info_to_lat_lon_alt, get_all_exts
 
-from langchain_text_splitters import MarkdownTextSplitter, RecursiveCharacterTextSplitter
+# from langchain_text_splitters import MarkdownTextSplitter, RecursiveCharacterTextSplitter
 
 
 from semantic_text_splitter import MarkdownSplitter
@@ -138,8 +138,9 @@ def __parse_pdf(file_path):
         pass
     
 
-def create_docs_for_db(chunk_size=1000, chunk_overlap=200, file_path=None, date_modified=None):
-        ext = Path(file_path).suffix
+def create_docs_for_db(chunk_size = 1000, chunk_overlap = 200, file_info: dict = {}):
+        file_path = Path(file_info.pop("path"))
+        ext = file_path.suffix
         # docling parsing of content, more accurate. This may replace custom parsing below.
         if ext in parsable_exts.get('docling'):
             pipeline_options = PdfPipelineOptions()
@@ -158,7 +159,8 @@ def create_docs_for_db(chunk_size=1000, chunk_overlap=200, file_path=None, date_
             # return content
             
             docs = MarkdownSplitter(capacity=(chunk_size,chunk_size+128), overlap=chunk_overlap, trim=True).chunks(content)
-            metadatas = [{"path": f"{file_path}", "fileext": f"{ext}", "date_modified": str(date_modified)} for _ in range(len(docs))]
+            chunk_id_fmt = "{}__{}_{:03d}"
+            metadatas = [{"path": f"{file_path}", "fileext": f"{ext}", "chunk-id": chunk_id_fmt.format(file_path.parent.name, file_path.stem, i),**file_info} for i in range(len(docs))]
             ids = [f"{file_path}_{i+1}" for i in range(len(docs))]
             
             return {"documents": docs, "metadatas": metadatas, "ids": ids}, len(docs)
