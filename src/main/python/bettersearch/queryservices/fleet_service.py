@@ -43,4 +43,4 @@ class FleetQueryService(BaseQueryService):
                     return {"error": f"Failed to execute query on Fleet database: {response.status}"}
                 
                 response_data = await response.json()
-                return {"source": "fleet","data": response_data}
+                return {"data": response_data}

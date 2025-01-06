@@ -1,13 +1,12 @@
 {
-    "content_tables": [
-        "file",
+    "File and Search Operations": [
         "windows_search",
         "mdfind",
         "apps",
         "homebrew_packages",
         "mdls"
     ],
-    "system_tables": [
+    "System and User Information": [
         "cpu_info",
         "system_info",
         "users",

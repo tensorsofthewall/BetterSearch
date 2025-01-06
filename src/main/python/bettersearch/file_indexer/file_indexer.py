@@ -164,7 +164,7 @@ class FileIndexer(object):
         self.start_db_thread.join()
         
         
-    def search(self, query, user_question):
+    def search(self, query, user_question, userPromptClass="Other"):
         """
         Returns context to answer the user's question
 
@@ -177,34 +177,64 @@ class FileIndexer(object):
         Returns:
             dict: A dictionary containing the data source, context, and error if any.
         """
-        query_type = identify_query_type(query)
         
-        output = defaultdict(lambda: None)
+        output = defaultdict(dict)
         
-        if query_type == "SQL":
-            # Run the SQL query and handle errors
-            response = self.svc.run_query(query)
-            
-            if response.get('error'):
-                if "Error code" not in response['error']:
-                    output.update({"error": response["error"]})
-                else:
-                    context = self.dbi.query_collection(query=user_question)
-                    output.update({"context": context, "error": response["error"]})
-            else:
-                try:
-                    context = self.dbi.query_collection(query=user_question, file_filter=response if 'path' in response['data'].keys() else None)
-                    output.update({"context": context, "svc_response": response})
-                except Exception as e:
-                    context = self.dbi.query_collection(query=user_question)
-                    output.update({"error": "Failed to query database: {e}", "svc_response": response,"context": context})
-        else:
+        if userPromptClass.lower() == "other":
+            # Directly query the vector database without running SQL query
             try:
-                context = self.dbi.query_collection(query=user_question)
-                output.update({"context": context})
+                dbi_response = self.dbi.query_collection(query=user_question)
+                output.update({"dbi": dbi_response})
             except Exception as e:
-                output.update({"error": f"Failed to query database: {e}", "context": ""})
+                output.update({"dbi": {"error": f"Failed to query database: {e}", "db_context": ""}})
+            
+            return output
+        else:
+            svc_response = self.svc.run_query(query)
+            
+            if svc_response.get("error"):
+                if "Error code" not in svc_response['error']:
+                    output.update({"svc":svc_response})
+                else:
+                    dbi_response = self.dbi.query_collection(query=user_question)
+                    output.update({"svc": svc_response, "dbi": dbi_response})
+            else:
+                # If no error from SVC service, query database    
+                try:    
+                    dbi_response = self.dbi.query_collection(query=user_question, file_filter=svc_response if 'path' in svc_response['data'].keys() else None)
+                    output.update({"svc": svc_response, "dbi": dbi_response})
+                except Exception as e:
+                    dbi_response = self.dbi.query_collection(query=user_question)
+                    output.update({"svc": svc_response,"dbi": {"error":f"Failed to query database: {e}"}})
+            
+            return output
             
         
-        return output
+        # if query.lower().startswith("select"):
+        #     # Run the SQL query and handle errors
+        #     response = self.svc.run_query(query)
+        #     if response.get('error'):
+        #         if "Error code" not in response['error']:
+        #             output.update({"error": response["error"]})
+        #         else:
+        #             context = self.dbi.query_collection(query=user_question)
+        #             output.update({"context": context, "error": response["error"]})
+        #     else:
+        #         try:
+        #             print("Here1")
+        #             context = self.dbi.query_collection(query=user_question, file_filter=response if 'path' in response['data'].keys() else None)
+        #             output.update({"context": context, "svc_response": response})
+        #         except Exception as e:
+        #             context = self.dbi.query_collection(query=user_question)
+        #             output.update({"error": "Failed to query database: {e}", "svc_response": response,"context": context})
+        # else:
+        #     try:
+        #         context = self.dbi.query_collection(query=user_question)
+        #         output.update({"context": context})
+        #         print("Here2")
+        #     except Exception as e:
+        #         output.update({"error": f"Failed to query database: {e}", "context": ""})
+            
+        
+        # return output
         

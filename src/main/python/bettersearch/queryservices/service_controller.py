@@ -53,10 +53,11 @@ class ServiceController:
         output.update({"source": self._service_type})
         if self.service:
             if inspect.iscoroutinefunction(self.service.run_query): # Handle asynchronous queries
-                output.update(asyncio.run(self.service.run_query(query, **kwargs)))
+                query_output = asyncio.run(self.service.run_query(query, **kwargs))
             else:
-                output.update(self.service.run_query(query, **kwargs))
+                query_output = self.service.run_query(query, **kwargs)
             
+            output.update(query_output)            
             return output
         else:
             raise ValueError("No service set")

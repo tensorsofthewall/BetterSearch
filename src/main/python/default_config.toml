@@ -4,6 +4,7 @@
 cache_dir = "D:\\projects\\BetterSearch\\cache_dir"
 schema_file = "D:\\projects\\Bettersearch\\src\\main\\python\\bettersearch\\pipeline\\table_schema.json"
 table_info_file = "D:\\projects\\Bettersearch\\src\\main\\python\\bettersearch\\pipeline\\table_info.json"
+table_groups_file = "D:/projects/BetterSearch/src/main/python/bettersearch/pipeline/table_groups.json"
 
 # Model Configuration
 [model_config]

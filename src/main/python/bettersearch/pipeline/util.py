@@ -1,5 +1,5 @@
 from pathlib import Path
-import os, re, sys, platform
+import os, re, platform
 import shutil
 from collections import defaultdict
 # import sqlparse
@@ -9,6 +9,20 @@ import psutil
 import json
 from typing import Union
 import requests
+
+# Generate System Specifications
+def get_sys_specs():
+    return {
+        "platform": platform.system().lower(),
+        "version": platform.version(),
+        "release": platform.release(),
+        "architecture": platform.architecture()[0],
+        "CPU Cores (logical)": psutil.cpu_count(logical=True),
+        "CPU Cores (physical)": psutil.cpu_count(logical=False),
+        "CPU Frequency": f"{psutil.cpu_freq().max:.2f} MHz" if psutil.cpu_freq() else "N/A",
+        "Total RAM": f"{psutil.virtual_memory().total / (1024**3):.2f} GB"
+    }
+
 
 # Clean the output of Llama-SQLCoder by formatting and removing aliases.
 def clean_sqlcoder_output(sql_query, table_info, table_name):
@@ -167,14 +181,20 @@ def get_local_model_and_tokenizer(model_name, cache_dir, bnb_config, kv_cache_fl
     return model, tokenizer
 
 # Separate method for getting prompt
-def get_prompt_format(folder_name: str, promptFormatDir: str | None = None):
-    promptFormats = ["generalPromptFormat", "sqlPromptFormat"]
+def get_prompt_formats(folder_name: str, promptFormatDir: str | None = None):
+    promptFormats = ["outputPromptFormat", "sqlPromptFormat"]
     if not promptFormatDir:
         promptFormatDir = Path(__file__).parent / f"{folder_name}"
         
-    
     promptFormatDict = defaultdict(lambda: None)
     
+    # First add qClassifierPromptFormat, hard-coded for now, should update this later
+    qClassifierFile = Path(__file__).parent / "q-classifier"/ "qClassifierPromptFormat.md"
+    if qClassifierFile.exists():
+        with open(qClassifierFile, "r") as f:
+            promptFormatDict["qClassifierPromptFormat"] = f.read()
+    
+    # Add model-specific prompt formats
     for promptFormat in promptFormats:
         file = promptFormatDir / f"{promptFormat}.md"
         if file.exists():
@@ -182,31 +202,6 @@ def get_prompt_format(folder_name: str, promptFormatDir: str | None = None):
                 promptFormatDict[promptFormat] = f.read()
     
     return promptFormatDict
-
-# Get SQL/OLEDB Table Metadata and Name
-def get_table_info():
-    if sys.platform == "win32":
-        from ..database.constants import WIN_SYSTEMINDEX_TABLE_METADATA
-        return WIN_SYSTEMINDEX_TABLE_METADATA, "SystemIndex"
-    elif sys.platform == "linux" or sys.platform == "linux2":
-        # For Linux DB
-        pass
-    elif sys.platform == "darwin":
-        # For OS X
-        pass
-
-# Get File Indexer    
-def get_file_indexer(**kwargs):
-    if sys.platform == "win32":
-        from ..file_indexer import WindowsFileIndexer
-        return WindowsFileIndexer(**kwargs)
-    elif sys.platform == "linux" or sys.platform == "linux2":
-        # For Linux DB
-        # from ..database import LinuxFileIndexer
-        pass
-    elif sys.platform == "darwin":
-        # For OS X
-        pass
 
 # Method to download and save new models in OpenVINO IR Format
 def download_and_save_ov_models(model_id, save_dir, fp_gen = "INT4"):
@@ -333,7 +328,7 @@ def get_compat_table_info(schema_file: Union[Path,str,None] = None, osquery_veri
     
     return formatted_data
 
-def get_platform_table_names(table_info_file: Union[Path,str], **kwargs):
+def get_platform_table_info(table_info_file: Union[Path,str], **kwargs):
     platforms = ['windows', 'darwin', 'linux']
     platforms.remove(platform.system().lower())
     
@@ -343,3 +338,9 @@ def get_platform_table_names(table_info_file: Union[Path,str], **kwargs):
         for pf in platforms:
             del table_names[pf], table_joins[pf]
     return table_names, table_joins
+
+def get_table_groups(table_groups_file: Union[Path, str], **kwargs) -> dict:
+    with open(table_groups_file) as f:
+        table_groups = json.load(f)
+        
+    return table_groups

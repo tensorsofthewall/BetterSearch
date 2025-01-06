@@ -114,8 +114,11 @@ class ChromaDBHandler(BaseDBHandler):
         else:
             metadata_filter = None
         
+        output = defaultdict(lambda: None)
         try:
             docs = self.collection.query(query_texts=[query], n_results=self.top_k, where={"metadata_field": metadata_filter} if metadata_filter else None).get('documents')
+            output.update({"data": "\n\n".join(str(x) for x in flatten(docs))})
         except Exception as e:
-            docs = []
-        return "\n\n".join(str(x) for x in flatten(docs)) if docs else ""
+            output.update({"error": f"Failed to query database: {e}"})
+            
+        return output

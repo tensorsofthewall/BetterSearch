@@ -14,6 +14,7 @@ class DBInterface:
     def _create_db_handler(self, **kwargs):
         db_type = kwargs.get("type", "")
         if db_type == "chroma":
+            self._db_type = db_type
             return ChromaDBHandler(**kwargs)
         elif not db_type:
             raise ValueError(f"Database type not specified. Please specify a valid database type.")
@@ -42,7 +43,7 @@ class DBInterface:
             elif change_type == "Modified":
                 self.db_instance._update_to_collection(values)
 
-    def query_collection(self, query: str, **kwargs) -> List[str]:
+    def query_collection(self, query: str, **kwargs) -> dict:
         """
         Query the vector database collection.
 
@@ -52,4 +53,4 @@ class DBInterface:
         Returns:
             list: Query results.
         """
-        return self.db_instance.query_collection(query, **kwargs)
+        return {"source": self._db_type, **self.db_instance.query_collection(query, **kwargs)}

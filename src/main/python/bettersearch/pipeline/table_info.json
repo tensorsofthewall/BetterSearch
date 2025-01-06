@@ -35,14 +35,14 @@
             ["cpu_info.logical_processors", "system_info.cpu_logical_cores"]
         ],
         "windows": [
-            ["file.path", "windows_search.path"],
+            ["file.path", "windows_search.path", "required"],
             ["file.size", "windows_search.size"],
             ["file.ctime", "windows_search.date_created"],
             ["file.mtime", "windows_search.date_modified"],
             ["file.type", "windows_search.type"]
         ],
         "darwin": [
-            ["file.path", "mdfind.path"],
+            ["file.path", "mdfind.path", "required"],
             ["file.path", "apps.path"],
             ["file.path","mdls.path"],
             ["apps.path", "mdfind.path"],
