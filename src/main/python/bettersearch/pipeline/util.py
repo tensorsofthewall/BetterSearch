@@ -7,7 +7,7 @@ from collections import defaultdict
 # from sqlparse.sql import Identifier, IdentifierList
 import psutil
 import json
-from typing import Union
+from typing import Any, Dict, Union
 import requests
 
 # Generate System Specifications
@@ -344,3 +344,9 @@ def get_table_groups(table_groups_file: Union[Path, str], **kwargs) -> dict:
         table_groups = json.load(f)
         
     return table_groups
+
+
+def get_nested_value(data: Dict[str, Any], keys: str) -> str:
+    for key in keys.split("."):
+        data = data.get(key, {})
+    return json.dumps(data) if data else ""

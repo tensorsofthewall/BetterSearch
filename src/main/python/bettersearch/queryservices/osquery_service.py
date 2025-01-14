@@ -33,6 +33,9 @@ class OSQueryService(BaseQueryService):
         # For thread-safe stop
         self._stop_lock = threading.Lock()
         
+    def is_running(self):
+        return self.instance.is_running()
+        
     def _get_current_state(self, **kwargs) -> defaultdict:
         """
         Get the current file state from osquery tables [Windows Search, MDFind, File].

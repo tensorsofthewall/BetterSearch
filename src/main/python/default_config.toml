@@ -29,12 +29,12 @@ bnb_4bit_compute_dtype="bfloat16"
 type="chroma"
 vector_db_path = "D:\\projects\\BetterSearch\\new_content_db"
 embedding_model_name = "Alibaba-NLP/gte-base-en-v1.5"
-chunk_batch_size=500
+chunk_batch_size=100
 chunk_overlap=100
 chunk_size=1000
 
 top_k=5
-device="cpu" # cuda
+device="cuda" # cuda
 
 # Service Controller Configuration
 [svc_config]

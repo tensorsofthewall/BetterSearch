@@ -36,13 +36,11 @@ class ChromaDBHandler(BaseDBHandler):
             path=vector_db_path, 
             settings=chromadb.config.Settings(),   
         )
-        
         self.collection = self.db.get_or_create_collection(
             name="file-content",
             embedding_function=self.embedding_model_fn,
             metadata={"hnsw:space": "cosine"}
         )
-        
         self._top_k = top_k
         self.batch_size = chunk_batch_size
     
@@ -55,34 +53,64 @@ class ChromaDBHandler(BaseDBHandler):
         self._top_k = value
     
     def _add_to_collection(self, files):
+        total_data = defaultdict(list)
+        total_docs = 0
         for item_dict in files:
             try:
                 data, num_docs = create_docs_for_db(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap, file_info=item_dict)
-                if num_docs:
-                    for i in range(0, num_docs, self.batch_size):
+                for k in data.keys():
+                    total_data[k].extend(data[k])
+                total_docs += num_docs
+                if total_docs > self.batch_size:
+                    logger.info("Adding {} document chunks".format(total_docs))
+                    for i in range(0, total_docs, self.batch_size):
                         self.collection.add(
-                            documents=data.get("documents")[i:i+self.batch_size],
-                            metadatas=data.get("metadatas")[i:i+self.batch_size],
-                            ids=data.get("ids")[i:i+self.batch_size],
+                            ids=total_data.get("ids")[i:i+self.batch_size],
+                            documents=total_data.get("documents")[i:i+self.batch_size],
+                            metadatas=total_data.get("metadatas")[i:i+self.batch_size]
                         )
+                    total_data.clear()
+                    total_docs = 0
             except Exception as e:
                 logger.error(f"File failed: {item_dict.get('path')}")
                 logger.exception(e)
+
+        if total_docs > 0:
+            self.collection.add(
+                ids=total_data.get("ids"),
+                documents=total_data.get("documents"),
+                metadatas=total_data.get("metadatas")
+            )
     
     def _update_to_collection(self, files):
+        total_data = defaultdict(list)
+        total_docs = 0
         for item_dict in files:
             try:
                 data, num_docs = create_docs_for_db(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap, file_info=item_dict)
-                if num_docs:
-                    for i in range(0, num_docs, self.batch_size):
-                        self.collection.update(
+                for k in data.keys():
+                    total_data[k].extend(data[k])
+                total_docs += num_docs
+                if total_docs > self.batch_size:
+                    logger.info("Updating {} document chunks".format(total_docs))
+                    for i in range(0, total_docs, self.batch_size):
+                        self.collection.upsert(
                             documents=data.get("documents")[i:i+self.batch_size],
                             metadatas=data.get("metadatas")[i:i+self.batch_size],
                             ids=data.get("ids")[i:i+self.batch_size],
                         )
+                    total_data.clear()
+                    total_docs = 0
             except Exception as e:
                 logger.error(f"File failed: {item_dict.get('path')}")
                 logger.exception(e)
+        
+        if total_docs > 0:
+            self.collection.upsert(
+                ids=total_data.get("ids"),
+                documents=total_data.get("documents"),
+                metadatas=total_data.get("metadatas")
+            )
     
     def _delete_from_collection(self, file_paths: Union[List[str], str,None]):
         if isinstance(file_paths, str):
@@ -96,9 +124,14 @@ class ChromaDBHandler(BaseDBHandler):
         if db_metadata:
             for item in db_metadata:
                 path = item.pop('path')
-                if 'number_of_shards' not in aggregate_metadata[path]:
+                if 'date_modified' not in aggregate_metadata[path]:
+                    # Only add other metadata one time, since its repeated for each chunk
+                    aggregate_metadata[path]['starting-chunk-id'] = item.pop('chunk-id')
                     aggregate_metadata[path].update(item)
+                    
                 aggregate_metadata[path]['number_of_chunks'] += 1
+        
+        aggregate_metadata = {k: v for k, v in aggregate_metadata.items() if v != aggregate_metadata.default_factory()}
         
         return {"source": "chroma", "data": aggregate_metadata}
     

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from ...bettersearch import __appname__, __version__
 
 class BaseQueryService(ABC):
     """

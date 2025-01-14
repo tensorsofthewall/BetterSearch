@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'input_widget.ui'
+## Form generated from reading UI file 'input_widgetouAXPJ.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.0
+## Created by: Qt User Interface Compiler version 6.8.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -27,6 +27,10 @@ class Ui_Form(object):
         Form.resize(846, 123)
         Form.setStyleSheet(u"#Form {\n"
 "	background: #fff;\n"
+"}\n"
+"\n"
+"#textlabel {\n"
+"	color: #000;\n"
 "}")
         self.gridLayout_3 = QGridLayout(Form)
         self.gridLayout_3.setSpacing(0)
@@ -34,8 +38,9 @@ class Ui_Form(object):
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
         self.input_frame = QFrame(Form)
         self.input_frame.setObjectName(u"input_frame")
-        self.input_frame.setFrameShape(QFrame.StyledPanel)
-        self.input_frame.setFrameShadow(QFrame.Raised)
+        self.input_frame.setStyleSheet(u"")
+        self.input_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.input_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout_2 = QGridLayout(self.input_frame)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.textlabel = QLabel(self.input_frame)
@@ -50,17 +55,17 @@ class Ui_Form(object):
 
         self.frame_2 = QFrame(self.input_frame)
         self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setFrameShape(QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.frame_2.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Shadow.Raised)
         self.verticalLayout_2 = QVBoxLayout(self.frame_2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.input_icon = QLabel(self.frame_2)
         self.input_icon.setObjectName(u"input_icon")
         self.input_icon.setMaximumSize(QSize(32, 32))
-        self.input_icon.setFrameShape(QFrame.NoFrame)
+        self.input_icon.setFrameShape(QFrame.Shape.NoFrame)
         self.input_icon.setPixmap(QPixmap(u":/icons/icons/user-circle-svgrepo-com.svg"))
         self.input_icon.setScaledContents(True)
-        self.input_icon.setAlignment(Qt.AlignCenter)
+        self.input_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_2.addWidget(self.input_icon)
 
@@ -73,8 +78,8 @@ class Ui_Form(object):
 
         self.frame_3 = QFrame(self.input_frame)
         self.frame_3.setObjectName(u"frame_3")
-        self.frame_3.setFrameShape(QFrame.StyledPanel)
-        self.frame_3.setFrameShadow(QFrame.Raised)
+        self.frame_3.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_3.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout = QGridLayout(self.frame_3)
         self.gridLayout.setObjectName(u"gridLayout")
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)

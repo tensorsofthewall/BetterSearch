@@ -2,9 +2,9 @@ from collections import defaultdict
 from typing import Callable
 from ..database.db_interface import DBInterface
 from ..queryservices.service_controller import ServiceController
-from .util import identify_query_type
 import concurrent.futures
 import threading
+import time
 
 class FileIndexer(object):
     """
@@ -43,6 +43,10 @@ class FileIndexer(object):
         """
         Update vector database during application start
         """
+        # Wait until service is running
+        while not self.svc.is_service_running():
+            time.sleep(1)
+        
         db_state = self.dbi.get_collection_metadata()
         self.current_dbState = self.svc.get_current_state(**self.fs_config)
         
@@ -74,15 +78,17 @@ class FileIndexer(object):
             new_state (dict): Current state of the file system
         """
         def compare_states(path_item):
-            if isinstance(path_item, str):
-                if path_item not in new_state:
-                    return {'ChangeType': 'Deleted', 'path': path_item}
-            else:
+            if isinstance(path_item, tuple):
                 path, item = path_item
-                if path not in new_state:
+                
+                if path not in old_state['data']:
                     return {'ChangeType': 'Added', 'path': path,**item}
-                elif old_state['data'][path] != item:
+                elif old_state['data'][path]['date_modified'] != item['date_modified']:
                     return {'ChangeType': 'Modified', 'path': path,**item}
+            elif isinstance(path_item, str):
+                if path_item not in new_state['data']:
+                    return {'ChangeType': 'Deleted', 'path': path_item}
+            
             return None
     
         def process_result(result):
@@ -128,6 +134,7 @@ class FileIndexer(object):
         Monitor table for changes and call registered callbacks when changes are detected.
         """
         self._db_ready_event.wait()
+        self.current_dbState = self.svc.get_current_state(**self.fs_config)
         while not self.stop_event.is_set():
             changes = self.detect_changes()
             if changes:

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main.ui'
+## Form generated from reading UI file 'mainitWAay.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.0
+## Created by: Qt User Interface Compiler version 6.8.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -88,7 +88,9 @@ class Ui_MainWindow(object):
 "\n"
 "#text_input_area {\n"
 ""
-                        "	border: none;\n"
+                        "	border: 1px solid #f5f5f5;\n"
+"	background: #fff;\n"
+"	color: #1d1d1d;\n"
 "}\n"
 "\n"
 "#send_btn {\n"
@@ -122,8 +124,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.settings_frame = QFrame(self.sidebar_widget)
         self.settings_frame.setObjectName(u"settings_frame")
-        self.settings_frame.setFrameShape(QFrame.StyledPanel)
-        self.settings_frame.setFrameShadow(QFrame.Raised)
+        self.settings_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.settings_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout_3 = QHBoxLayout(self.settings_frame)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.horizontalLayout_3.setContentsMargins(-1, 8, -1, 8)
@@ -155,8 +157,8 @@ class Ui_MainWindow(object):
 
         self.chat_list_frame = QFrame(self.sidebar_widget)
         self.chat_list_frame.setObjectName(u"chat_list_frame")
-        self.chat_list_frame.setFrameShape(QFrame.StyledPanel)
-        self.chat_list_frame.setFrameShadow(QFrame.Raised)
+        self.chat_list_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.chat_list_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout = QGridLayout(self.chat_list_frame)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setVerticalSpacing(3)
@@ -174,16 +176,16 @@ class Ui_MainWindow(object):
 
         self.options_frame = QFrame(self.sidebar_widget)
         self.options_frame.setObjectName(u"options_frame")
-        self.options_frame.setFrameShape(QFrame.StyledPanel)
-        self.options_frame.setFrameShadow(QFrame.Raised)
+        self.options_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.options_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.verticalLayout = QVBoxLayout(self.options_frame)
         self.verticalLayout.setSpacing(3)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(-1, 5, -1, 5)
         self.clear_chats_frame = QFrame(self.options_frame)
         self.clear_chats_frame.setObjectName(u"clear_chats_frame")
-        self.clear_chats_frame.setFrameShape(QFrame.StyledPanel)
-        self.clear_chats_frame.setFrameShadow(QFrame.Raised)
+        self.clear_chats_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.clear_chats_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout = QHBoxLayout(self.clear_chats_frame)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -203,8 +205,8 @@ class Ui_MainWindow(object):
 
         self.dark_mode_frame = QFrame(self.options_frame)
         self.dark_mode_frame.setObjectName(u"dark_mode_frame")
-        self.dark_mode_frame.setFrameShape(QFrame.StyledPanel)
-        self.dark_mode_frame.setFrameShadow(QFrame.Raised)
+        self.dark_mode_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.dark_mode_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout_2 = QHBoxLayout(self.dark_mode_frame)
         self.horizontalLayout_2.setSpacing(0)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -249,8 +251,8 @@ class Ui_MainWindow(object):
         self.input_frame.setSizePolicy(sizePolicy)
         self.input_frame.setMinimumSize(QSize(650, 0))
         self.input_frame.setMaximumSize(QSize(1000, 120))
-        self.input_frame.setFrameShape(QFrame.StyledPanel)
-        self.input_frame.setFrameShadow(QFrame.Raised)
+        self.input_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.input_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout_2 = QGridLayout(self.input_frame)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setHorizontalSpacing(1)
@@ -296,12 +298,12 @@ class Ui_MainWindow(object):
         self.output_area = QScrollArea(self.main_widget)
         self.output_area.setObjectName(u"output_area")
         self.output_area.setAutoFillBackground(False)
-        self.output_area.setFrameShape(QFrame.StyledPanel)
+        self.output_area.setFrameShape(QFrame.Shape.StyledPanel)
         self.output_area.setLineWidth(0)
         self.output_area.setWidgetResizable(True)
         self.output_area_widget = QWidget()
         self.output_area_widget.setObjectName(u"output_area_widget")
-        self.output_area_widget.setGeometry(QRect(0, 0, 1333, 691))
+        self.output_area_widget.setGeometry(QRect(0, 0, 1333, 679))
         self.gridLayout_4 = QGridLayout(self.output_area_widget)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.verticalSpacer_2 = QSpacerItem(20, 777, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
@@ -318,7 +320,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1612, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1612, 33))
         MainWindow.setMenuBar(self.menubar)
 
         self.retranslateUi(MainWindow)

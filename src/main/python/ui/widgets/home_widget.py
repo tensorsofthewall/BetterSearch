@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'home_widget.ui'
+## Form generated from reading UI file 'home_widgetBicsxi.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.0
+## Created by: Qt User Interface Compiler version 6.8.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -38,6 +38,21 @@ class Ui_home_widget(object):
 "\n"
 "#app_frame {\n"
 "	background: #fff\n"
+"}\n"
+"\n"
+"#app_name,\n"
+"#label,\n"
+"#label_2,\n"
+"#label_3,\n"
+"#label_4,\n"
+"#label_5,\n"
+"#label_6 {\n"
+"	color: #000;\n"
+"}\n"
+"\n"
+"#toolButton,\n"
+"#toolButton_3 {\n"
+"	color: #000\n"
 "}")
         self.gridLayout = QGridLayout(home_widget)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -48,8 +63,8 @@ class Ui_home_widget(object):
         self.app_frame = QFrame(home_widget)
         self.app_frame.setObjectName(u"app_frame")
         self.app_frame.setMaximumSize(QSize(1000, 270))
-        self.app_frame.setFrameShape(QFrame.StyledPanel)
-        self.app_frame.setFrameShadow(QFrame.Raised)
+        self.app_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.app_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout_2 = QHBoxLayout(self.app_frame)
         self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -63,10 +78,10 @@ class Ui_home_widget(object):
         self.app_logo.setSizePolicy(sizePolicy)
         self.app_logo.setMaximumSize(QSize(175, 175))
         self.app_logo.setAutoFillBackground(False)
-        self.app_logo.setTextFormat(Qt.AutoText)
+        self.app_logo.setTextFormat(Qt.TextFormat.AutoText)
         self.app_logo.setPixmap(QPixmap(u":/imgs/images/logo.svg"))
         self.app_logo.setScaledContents(True)
-        self.app_logo.setAlignment(Qt.AlignCenter)
+        self.app_logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.app_logo.setWordWrap(False)
 
         self.horizontalLayout_2.addWidget(self.app_logo)
@@ -81,9 +96,9 @@ class Ui_home_widget(object):
         font.setItalic(False)
         font.setUnderline(False)
         self.app_name.setFont(font)
-        self.app_name.setTextFormat(Qt.AutoText)
+        self.app_name.setTextFormat(Qt.TextFormat.AutoText)
         self.app_name.setScaledContents(False)
-        self.app_name.setAlignment(Qt.AlignCenter)
+        self.app_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.app_name.setWordWrap(False)
 
         self.horizontalLayout_2.addWidget(self.app_name)
@@ -98,7 +113,7 @@ class Ui_home_widget(object):
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.verticalLayout.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setSpacing(2)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -116,7 +131,7 @@ class Ui_home_widget(object):
         icon.addFile(u":/icons/icons/venn-diagram-svgrepo-com.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButton.setIcon(icon)
         self.toolButton.setIconSize(QSize(28, 28))
-        self.toolButton.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.toolButton.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         self.toolButton.setAutoRaise(True)
 
         self.horizontalLayout_3.addWidget(self.toolButton)
@@ -135,7 +150,7 @@ class Ui_home_widget(object):
         font2.setPointSize(11)
         self.label.setFont(font2)
         self.label.setScaledContents(False)
-        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setWordWrap(True)
 
         self.verticalLayout.addWidget(self.label)
@@ -143,7 +158,7 @@ class Ui_home_widget(object):
         self.label_2 = QLabel(home_widget)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setFont(font2)
-        self.label_2.setAlignment(Qt.AlignCenter)
+        self.label_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_2.setWordWrap(True)
 
         self.verticalLayout.addWidget(self.label_2)
@@ -151,7 +166,7 @@ class Ui_home_widget(object):
         self.label_3 = QLabel(home_widget)
         self.label_3.setObjectName(u"label_3")
         self.label_3.setFont(font2)
-        self.label_3.setAlignment(Qt.AlignCenter)
+        self.label_3.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_3.setWordWrap(True)
 
         self.verticalLayout.addWidget(self.label_3)
@@ -180,7 +195,7 @@ class Ui_home_widget(object):
         icon1.addFile(u":/icons/icons/perimeter-limit-svgrepo-com.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButton_3.setIcon(icon1)
         self.toolButton_3.setIconSize(QSize(28, 28))
-        self.toolButton_3.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.toolButton_3.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         self.toolButton_3.setAutoRaise(True)
 
         self.horizontalLayout_4.addWidget(self.toolButton_3)
@@ -195,7 +210,7 @@ class Ui_home_widget(object):
         self.label_6 = QLabel(home_widget)
         self.label_6.setObjectName(u"label_6")
         self.label_6.setFont(font2)
-        self.label_6.setAlignment(Qt.AlignCenter)
+        self.label_6.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_6.setWordWrap(True)
 
         self.verticalLayout_2.addWidget(self.label_6)
@@ -203,7 +218,7 @@ class Ui_home_widget(object):
         self.label_5 = QLabel(home_widget)
         self.label_5.setObjectName(u"label_5")
         self.label_5.setFont(font2)
-        self.label_5.setAlignment(Qt.AlignCenter)
+        self.label_5.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_5.setWordWrap(True)
 
         self.verticalLayout_2.addWidget(self.label_5)
@@ -211,7 +226,7 @@ class Ui_home_widget(object):
         self.label_4 = QLabel(home_widget)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setFont(font2)
-        self.label_4.setAlignment(Qt.AlignCenter)
+        self.label_4.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_4.setWordWrap(True)
 
         self.verticalLayout_2.addWidget(self.label_4)

@@ -1,9 +1,10 @@
 import datetime
 import json
 from ..llm.llm_interface import LLMInterface
-from .util import get_platform_table_info, get_compat_table_info, get_prompt_formats, get_table_groups, get_sys_specs
+from .util import get_platform_table_info, get_compat_table_info, get_prompt_formats, get_table_groups, get_sys_specs, get_nested_value
 from ..file_indexer.file_indexer import FileIndexer
 import itertools
+from collections import defaultdict
 
 
 class BetterSearchPipeline:
@@ -77,14 +78,15 @@ class BetterSearchPipeline:
             context_output = self.file_indexer.search(sql_query, user_question, userPromptClass)
         
         # Final step: Final prompt format to LLM for generating answer
+        
         general_prompt = self.prompt_formats["outputPromptFormat"].format(
             user_question=user_question,
-            svc_source=json.dumps(context_output.get("svc").get("source","")),
-            svc_data=json.dumps(context_output.get("svc").get("data","")),
-            svc_error=json.dumps(context_output.get("svc").get("error","")),
-            dbi_source=json.dumps(context_output.get("dbi").get("source","")),
-            dbi_data=json.dumps(context_output.get("dbi").get("data","")),
-            dbi_error=json.dumps(context_output.get("dbi").get("error","")),
+            svc_source=get_nested_value(context_output,"svc.source"),# json.dumps(context_output.get("svc", {}).get("source","")),
+            svc_data=get_nested_value(context_output,"svc.data"),# json.dumps(context_output.get("svc", {}).get("data","")),
+            svc_error=get_nested_value(context_output,"svc.error"),# json.dumps(context_output.get("svc", {}).get("error","")),
+            dbi_source=get_nested_value(context_output,"dbi.source"),# json.dumps(context_output.get("dbi", {}).get("source","")),
+            dbi_data=get_nested_value(context_output,"dbi.data"),# json.dumps(context_output.get("dbi", {}).get("data","")),
+            dbi_error=get_nested_value(context_output,"dbi.error"),# json.dumps(context_output.get("dbi", {}).get("error","")),
             date_time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             sys_specs=self._sys_spec_string,
         )

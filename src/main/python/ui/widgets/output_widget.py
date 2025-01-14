@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'output_widget.ui'
+## Form generated from reading UI file 'output_widgetohjmeD.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.0
+## Created by: Qt User Interface Compiler version 6.8.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -27,6 +27,10 @@ class Ui_Form(object):
         Form.resize(854, 121)
         Form.setStyleSheet(u"#Form {\n"
 "	background: #fff;\n"
+"}\n"
+"\n"
+"#textlabel {\n"
+"	color: #000;\n"
 "}")
         self.gridLayout_3 = QGridLayout(Form)
         self.gridLayout_3.setSpacing(0)
@@ -34,14 +38,15 @@ class Ui_Form(object):
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
         self.output_frame = QFrame(Form)
         self.output_frame.setObjectName(u"output_frame")
-        self.output_frame.setFrameShape(QFrame.StyledPanel)
-        self.output_frame.setFrameShadow(QFrame.Raised)
+        self.output_frame.setStyleSheet(u"")
+        self.output_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.output_frame.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout_2 = QGridLayout(self.output_frame)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.frame_3 = QFrame(self.output_frame)
         self.frame_3.setObjectName(u"frame_3")
-        self.frame_3.setFrameShape(QFrame.StyledPanel)
-        self.frame_3.setFrameShadow(QFrame.Raised)
+        self.frame_3.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_3.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout = QGridLayout(self.frame_3)
         self.gridLayout.setObjectName(u"gridLayout")
         self.redo_btn = QPushButton(self.frame_3)
@@ -77,17 +82,17 @@ class Ui_Form(object):
 
         self.frame_2 = QFrame(self.output_frame)
         self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setFrameShape(QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.frame_2.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Shadow.Raised)
         self.verticalLayout_2 = QVBoxLayout(self.frame_2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.output_icon = QLabel(self.frame_2)
         self.output_icon.setObjectName(u"output_icon")
         self.output_icon.setMaximumSize(QSize(44, 44))
-        self.output_icon.setFrameShape(QFrame.NoFrame)
+        self.output_icon.setFrameShape(QFrame.Shape.NoFrame)
         self.output_icon.setPixmap(QPixmap(u":/imgs/images/logo.svg"))
         self.output_icon.setScaledContents(True)
-        self.output_icon.setAlignment(Qt.AlignCenter)
+        self.output_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_2.addWidget(self.output_icon)
 

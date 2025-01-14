@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/cross-svgrepo-com.svg</file>
+    <file>icons/check-svgrepo-com.svg</file>
+    <file>icons/chat-round-dots-svgrepo-com.svg</file>
     <file>icons/redo-svgrepo-com.svg</file>
     <file>icons/edit-3-svgrepo-com.svg</file>
     <file>icons/user-circle-svgrepo-com.svg</file>

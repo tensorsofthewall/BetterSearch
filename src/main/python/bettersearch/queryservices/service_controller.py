@@ -71,6 +71,13 @@ class ServiceController:
         """
         return self.service
     
+    def is_service_running(self):
+        """
+        Check if the service is running
+        """
+        if self.service:
+            return self.service.is_running()
+    
     def stop_service(self):
         """
         Stop the currently set service.
